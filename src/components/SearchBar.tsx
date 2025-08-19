@@ -1,0 +1,152 @@
+'use client';
+
+import { useState } from 'react';
+import { Search, MapPin } from 'lucide-react';
+import { Category } from '@/lib/types';
+
+interface SearchBarProps {
+  onSearch: (filters: {
+    category: Category | '';
+    city: string;
+    distance: number;
+  }) => void;
+}
+
+const categories = [
+  { value: '', label: 'All categories' },
+  { value: 'food_home', label: 'Food at home' },
+  { value: 'haircut_mobile', label: 'Haircut at home' },
+  { value: 'cleaning', label: 'Cleaning' },
+  { value: 'tutoring', label: 'Tutoring' },
+  { value: 'repairs', label: 'Repairs' },
+] as const;
+
+const cities = ['', 'Tunis', 'Sousse', 'Budapest'];
+
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [category, setCategory] = useState<Category | ''>('');
+  const [city, setCity] = useState('');
+  const [distance, setDistance] = useState(5);
+
+  const handleSearch = () => {
+    onSearch({ category, city, distance });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        {/* Category Select */}
+        <div className="space-y-2">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 h-5">
+            Service
+          </label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category | '')}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10 bg-white text-gray-900"
+            style={{
+              color: '#111827',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* City Select */}
+        <div className="space-y-2">
+          <label htmlFor="city" className="block text-sm font-medium text-gray-700 h-5">
+            <MapPin className="inline w-4 h-4 mr-1" />
+            City
+          </label>
+          <select
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10 bg-white text-gray-900"
+            style={{
+              color: '#111827',
+              backgroundColor: '#ffffff'
+            }}
+          >
+            <option value="">All cities</option>
+            {cities.slice(1).map((cityOption) => (
+              <option key={cityOption} value={cityOption}>
+                {cityOption}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Distance Slider */}
+        <div className="space-y-2">
+          <label htmlFor="distance" className="block text-sm font-medium text-gray-700 h-5">
+            Distance: {distance} km
+          </label>
+          <div className="flex items-center space-x-2 h-10">
+            <span className="text-xs text-gray-500">2</span>
+            <input
+              id="distance"
+              type="range"
+              min="2"
+              max="10"
+              step="1"
+              value={distance}
+              onChange={(e) => setDistance(Number(e.target.value))}
+              onKeyPress={handleKeyPress}
+              className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <span className="text-xs text-gray-500">10</span>
+          </div>
+        </div>
+
+        {/* Search Button */}
+        <div className="space-y-2">
+          <div className="h-5"></div>
+          <button
+            onClick={handleSearch}
+            className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center space-x-2 h-10"
+            aria-label="Search for providers"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #2563eb;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .slider::-moz-range-thumb {
+          height: 20px;
+          width: 20px;
+          border-radius: 50%;
+          background: #2563eb;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+    </div>
+  );
+}
