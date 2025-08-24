@@ -3,6 +3,7 @@
 import { Provider } from '@/lib/types';
 import { Star, MapPin, MessageCircle, Phone } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface ProviderCardProps {
   provider: Provider;
@@ -25,6 +26,8 @@ const categoryColors = {
 };
 
 export default function ProviderCard({ provider }: ProviderCardProps) {
+  const router = useRouter();
+  
   const normalizePhone = (phone: string) => {
     return phone.replace(/[^\d+]/g, '');
   };
@@ -37,8 +40,19 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
     ? `https://${provider.messenger}`
     : null;
 
+  const handleCardClick = () => {
+    router.push(`/provider/${provider.id}`);
+  };
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking contact buttons
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <div 
+      className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* Header with avatar and basic info */}
       <div className="p-6">
         <div className="flex flex-col items-center text-center space-y-4">
@@ -115,6 +129,7 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleContactClick}
               className="bg-green-600 text-white p-3 rounded-full font-medium hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center"
               aria-label={`Contact ${provider.name} on WhatsApp`}
             >
@@ -127,6 +142,7 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
               href={messengerUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleContactClick}
               className="bg-blue-600 text-white p-3 rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
               aria-label={`Contact ${provider.name} on Messenger`}
             >

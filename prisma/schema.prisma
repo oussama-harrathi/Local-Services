@@ -88,6 +88,7 @@ model ProviderProfile {
   whatsapp   String?
   messenger  String?
   isVerified Boolean  @default(false)
+  isHidden   Boolean  @default(false)
   createdAt  DateTime @default(now())
   
   // Relations
@@ -105,6 +106,7 @@ model Review {
   userId     String
   rating     Int
   text       String
+  isHidden   Boolean  @default(false)
   createdAt  DateTime @default(now())
   
   // Relations
@@ -112,6 +114,7 @@ model Review {
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports  Report[]        @relation("ReviewReports")
   
+  @@unique([userId, providerId])
   @@map("reviews")
 }
 

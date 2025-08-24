@@ -1,23 +1,51 @@
 import { NextResponse } from 'next/server';
-import { Provider } from '@/lib/types';
 import { prisma } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const providerProfile = await prisma.providerProfile.findUnique({
-      where: { id },
+      where: { 
+        id,
+        isHidden: false // Only show visible providers
+      },
       include: {
-        user: true,
-        reviews: {
+        user: {
           select: {
-            rating: true,
+            name: true,
+            email: true,
+            image: true,
           },
         },
+        reviews: {
+          where: {
+            isHidden: false // Only show visible reviews
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        _count: {
+          select: {
+            reviews: {
+              where: {
+                isHidden: false
+              }
+            }
+          }
+        }
       },
     });
 
@@ -28,31 +56,50 @@ export async function GET(
       );
     }
 
-    // Calculate average rating and count from reviews
-    const ratings = providerProfile.reviews.map((r: { rating: number }) => r.rating);
-    const averageRating = ratings.length > 0 
-      ? Number((ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length).toFixed(1))
+    // Calculate average rating
+    const visibleReviews = providerProfile.reviews;
+    const averageRating = visibleReviews.length > 0
+      ? visibleReviews.reduce((sum: number, review: { rating: number }) => sum + review.rating, 0) / visibleReviews.length
       : 0;
-    const reviewCount = ratings.length;
 
-    // Transform database record to match the Provider type
-    const provider: Provider = {
+    // Format the response
+    const provider = {
       id: providerProfile.id,
-      name: providerProfile.name,
-      city: providerProfile.city,
-      coords: {
-        lat: providerProfile.lat,
-        lng: providerProfile.lng,
-      },
-      categories: providerProfile.categories.split(','), // Convert comma-separated string back to array
+      name: providerProfile.user.name || 'Anonymous',
+      email: providerProfile.user.email,
+      avatarUrl: providerProfile.user.image || '/default-avatar.png',
       bio: providerProfile.bio,
-      avatarUrl: providerProfile.avatarUrl,
+      city: providerProfile.city,
+      latitude: providerProfile.latitude,
+      longitude: providerProfile.longitude,
+      categories: providerProfile.categories ? providerProfile.categories.split(',').map((cat: string) => cat.trim()) : [],
+      whatsapp: providerProfile.whatsapp,
+      messenger: providerProfile.messenger,
+      isVerified: providerProfile.isVerified,
+      createdAt: providerProfile.createdAt,
       review: {
-        rating: averageRating,
-        count: reviewCount,
+        rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+        count: providerProfile._count.reviews,
       },
-      whatsapp: providerProfile.whatsapp || undefined,
-      messenger: providerProfile.messenger || undefined,
+      reviews: visibleReviews.map((review: { 
+        id: string;
+        rating: number;
+        comment: string;
+        createdAt: Date;
+        user: {
+          name: string | null;
+          image: string | null;
+        }
+      }) => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.createdAt,
+        user: {
+          name: review.user.name || 'Anonymous',
+          image: review.user.image || '/default-avatar.png',
+        },
+      })),
     };
 
     return NextResponse.json(provider);

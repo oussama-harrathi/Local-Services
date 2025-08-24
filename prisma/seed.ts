@@ -55,7 +55,9 @@ async function main() {
     // Create a fake user for each provider
     const user = await prisma.user.create({
       data: {
+        name: provider.name,
         email: `${provider.name.toLowerCase().replace(/\s+/g, '.')}@localspark.com`,
+        image: provider.avatarUrl,
         role: 'provider',
       },
     });
@@ -87,10 +89,13 @@ async function main() {
 
   // Create some fake reviewer users
   const reviewerUsers = [];
+  const reviewerNames = ['John Smith', 'Emma Wilson', 'Michael Brown', 'Lisa Davis', 'David Miller'];
   for (let i = 1; i <= 5; i++) {
     const reviewer = await prisma.user.create({
       data: {
+        name: reviewerNames[i - 1],
         email: `reviewer${i}@example.com`,
+        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=reviewer${i}`,
         role: 'user',
       },
     });
