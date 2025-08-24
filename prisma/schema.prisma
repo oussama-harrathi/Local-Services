@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  role     String @default("user")
+  
+  // Relations
+  providerProfile ProviderProfile?
+  reviews         Review[]
+  favorites       Favorite[]
+  reports         Report[]
+  
+  @@map("users")
+}
+
+model ProviderProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  name       String
+  city       String
+  lat        Float
+  lng        Float
+  categories String   // Comma-separated categories for SQLite compatibility
+  bio        String
+  avatarUrl  String
+  whatsapp   String?
+  messenger  String?
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews   Review[]
+  favorites Favorite[]
+  reports   Report[]   @relation("ProviderReports")
+  
+  @@map("provider_profiles")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  providerId String
+  userId     String
+  rating     Int
+  text       String
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports  Report[]        @relation("ReviewReports")
+  
+  @@map("reviews")
+}
+
+model Favorite {
+  userId     String
+  providerId String
+  
+  // Relations
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@id([userId, providerId])
+  @@map("favorites")
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  targetType String   // "provider" or "review"
+  targetId   String
+  reason     String
+  details    String?
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  reporter User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  provider ProviderProfile? @relation("ProviderReports", fields: [targetId], references: [id], onDelete: Cascade)
+  review   Review?          @relation("ReviewReports", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  @@map("reports")
+}

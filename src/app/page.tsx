@@ -9,7 +9,7 @@ import MapPreview from '@/components/MapPreview';
 import TrustStrip from '@/components/TrustStrip';
 import CityCTA from '@/components/CityCTA';
 import Footer from '@/components/Footer';
-import { mockProviders } from '@/lib/mockData';
+// import { mockProviders } from '@/lib/mockData'; // Replaced with API call
 import { haversineKm } from '@/lib/geo';
 import { CITY_CENTERS } from '@/lib/cities';
 import { Category, Provider } from '@/lib/types';
@@ -18,7 +18,30 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistance, setSelectedDistance] = useState(5);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [providers, setProviders] = useState<Provider[]>([]);
+
+  // Fetch providers from API
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/providers');
+        if (response.ok) {
+          const data = await response.json();
+          setProviders(data);
+        } else {
+          console.error('Failed to fetch providers');
+        }
+      } catch (error) {
+        console.error('Error fetching providers:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, []);
 
   // Load saved preferences from localStorage
   useEffect(() => {
@@ -41,7 +64,7 @@ export default function Home() {
 
   // Filter providers based on search criteria
   const filteredProviders = useMemo(() => {
-    let filtered = [...mockProviders];
+    let filtered = [...providers];
 
     // Filter by category
     if (selectedCategory) {
@@ -65,7 +88,7 @@ export default function Home() {
     }
 
     return filtered;
-  }, [selectedCategory, selectedCity, selectedDistance]);
+  }, [providers, selectedCategory, selectedCity, selectedDistance]);
 
   const handleSearch = (filters: {
     category: Category | '';
