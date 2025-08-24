@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { User, MapPin, Camera, MessageCircle, Phone } from 'lucide-react'
+import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
 interface ProviderProfile {
@@ -145,6 +145,15 @@ export default function ProviderDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </button>
+        
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">

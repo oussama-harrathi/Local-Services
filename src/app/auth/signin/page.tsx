@@ -2,8 +2,8 @@
 
 import { signIn, getProviders } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { LogIn } from 'lucide-react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { LogIn, ArrowLeft } from 'lucide-react'
 
 interface Provider {
   id: string
@@ -16,6 +16,7 @@ interface Provider {
 export default function SignIn() {
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
   const searchParams = useSearchParams()
+  const router = useRouter()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   useEffect(() => {
@@ -29,6 +30,14 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </button>
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
             <LogIn className="h-6 w-6 text-blue-600" />

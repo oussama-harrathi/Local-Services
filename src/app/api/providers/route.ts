@@ -18,12 +18,12 @@ export async function GET(request: Request) {
     const whereClause: any = {};
 
     // Filter by city
-    if (city && city !== 'all') {
+    if (city && city !== 'all' && city !== '') {
       whereClause.city = city;
     }
 
     // Filter by category (search in comma-separated categories string)
-    if (category && category !== 'all') {
+    if (category && category !== 'all' && category !== '') {
       whereClause.categories = {
         contains: category,
       };
@@ -32,8 +32,8 @@ export async function GET(request: Request) {
     // Filter by search query (search in name and bio)
     if (q) {
       whereClause.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { bio: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q } },
+        { bio: { contains: q } },
       ];
     }
 
