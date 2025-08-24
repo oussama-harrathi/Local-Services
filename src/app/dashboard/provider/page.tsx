@@ -1,0 +1,303 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { User, MapPin, Camera, MessageCircle, Phone } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+
+interface ProviderProfile {
+  id?: string
+  bio: string
+  city: string
+  latitude: number
+  longitude: number
+  categories: string[]
+  photos: string[]
+  whatsapp?: string
+  messenger?: string
+}
+
+const CATEGORIES = [
+  'Home Cooking',
+  'Mobile Barber/Hairdresser',
+  'Cleaning Services',
+  'Tutoring',
+  'Home Repairs',
+  'Pet Care',
+  'Gardening',
+  'Photography',
+  'Fitness Training',
+  'Music Lessons'
+]
+
+export default function ProviderDashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  
+  const [formData, setFormData] = useState<ProviderProfile>({
+    bio: '',
+    city: '',
+    latitude: 0,
+    longitude: 0,
+    categories: [],
+    photos: [],
+    whatsapp: '',
+    messenger: ''
+  })
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session) {
+      router.push('/auth/signin?callbackUrl=/dashboard/provider')
+    }
+  }, [session, status, router])
+
+  // Fetch existing provider profile
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['provider-profile'],
+    queryFn: async () => {
+      const response = await fetch('/api/me/provider-profile')
+      if (response.status === 404) return null
+      if (!response.ok) throw new Error('Failed to fetch profile')
+      return response.json()
+    },
+    enabled: !!session
+  })
+
+  // Update form data when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        id: profile.id,
+        bio: profile.bio || '',
+        city: profile.city || '',
+        latitude: profile.latitude || 0,
+        longitude: profile.longitude || 0,
+        categories: profile.categories || [],
+        photos: profile.photos || [],
+        whatsapp: profile.whatsapp || '',
+        messenger: profile.messenger || ''
+      })
+    }
+  }, [profile])
+
+  // Save profile mutation
+  const saveProfileMutation = useMutation({
+    mutationFn: async (data: ProviderProfile) => {
+      const response = await fetch('/api/me/provider-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to save profile')
+      return response.json()
+    },
+    onSuccess: () => {
+      toast.success('Profile saved successfully!')
+      queryClient.invalidateQueries({ queryKey: ['provider-profile'] })
+    },
+    onError: () => {
+      toast.error('Failed to save profile')
+    }
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    saveProfileMutation.mutate(formData)
+  }
+
+  const handleCategoryToggle = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category]
+    }))
+  }
+
+  const handleLocationSelect = (lat: number, lng: number, city: string) => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      city
+    }))
+  }
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <User className="h-6 w-6" />
+              Provider Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Create and manage your service provider profile
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Bio Section */}
+            <div>
+              <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                rows={4}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Tell potential customers about yourself and your services..."
+                value={formData.bio}
+                onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                required
+              />
+            </div>
+
+            {/* City Section */}
+            <div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                City
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  type="text"
+                  id="city"
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your city"
+                  value={formData.city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  required
+                />
+                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Location Picker Placeholder */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <div className="mt-1 p-4 border-2 border-dashed border-gray-300 rounded-md text-center">
+                <MapPin className="mx-auto h-8 w-8 text-gray-400" />
+                <p className="mt-2 text-sm text-gray-500">
+                  Interactive map picker will be implemented here
+                </p>
+                {formData.latitude !== 0 && formData.longitude !== 0 && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    Current: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Categories Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Service Categories
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {CATEGORIES.map((category) => (
+                  <label key={category} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      checked={formData.categories.includes(category)}
+                      onChange={() => handleCategoryToggle(category)}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Photos Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Photos
+              </label>
+              <div className="mt-1 p-4 border-2 border-dashed border-gray-300 rounded-md text-center">
+                <Camera className="mx-auto h-8 w-8 text-gray-400" />
+                <p className="mt-2 text-sm text-gray-500">
+                  Photo upload with presigned URLs will be implemented here
+                </p>
+                {formData.photos.length > 0 && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    {formData.photos.length} photo(s) uploaded
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700">
+                  WhatsApp
+                </label>
+                <div className="mt-1 relative">
+                  <input
+                    type="tel"
+                    id="whatsapp"
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="+1234567890"
+                    value={formData.whatsapp}
+                    onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
+                  />
+                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="messenger" className="block text-sm font-medium text-gray-700">
+                  Messenger
+                </label>
+                <div className="mt-1 relative">
+                  <input
+                    type="text"
+                    id="messenger"
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pl-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="@username"
+                    value={formData.messenger}
+                    onChange={(e) => setFormData(prev => ({ ...prev, messenger: e.target.value }))}
+                  />
+                  <MessageCircle className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={saveProfileMutation.isPending}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saveProfileMutation.isPending ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
