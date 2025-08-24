@@ -1,12 +1,44 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { Provider } from '@/lib/types';
+import { haversineKm } from '@/lib/geo';
+import { prisma } from '@/lib/db';
 
-const prisma = new PrismaClient();
-
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
   try {
+    // Extract query parameters
+    const city = searchParams.get('city');
+    const category = searchParams.get('category');
+    const q = searchParams.get('q'); // search query
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const maxKm = searchParams.get('maxKm');
+
+    // Build where clause for Prisma query
+    const whereClause: any = {};
+
+    // Filter by city
+    if (city && city !== 'all') {
+      whereClause.city = city;
+    }
+
+    // Filter by category (search in comma-separated categories string)
+    if (category && category !== 'all') {
+      whereClause.categories = {
+        contains: category,
+      };
+    }
+
+    // Filter by search query (search in name and bio)
+    if (q) {
+      whereClause.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { bio: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
     const providerProfiles = await prisma.providerProfile.findMany({
+      where: whereClause,
       include: {
         user: true,
         reviews: {
@@ -18,7 +50,7 @@ export async function GET() {
     });
 
     // Transform database records to match the Provider type
-    const providers: Provider[] = providerProfiles.map((profile: any) => {
+    let providers: Provider[] = providerProfiles.map((profile: { id: string; name: string; city: string; lat: number; lng: number; categories: string; bio: string; avatarUrl: string; whatsapp: string | null; messenger: string | null; reviews: { rating: number }[]; user: any }) => {
       // Calculate average rating and count from reviews
       const ratings = profile.reviews.map((r: { rating: number }) => r.rating);
       const averageRating = ratings.length > 0 
@@ -45,6 +77,21 @@ export async function GET() {
         messenger: profile.messenger || undefined,
       };
     });
+
+    // Apply distance filtering if coordinates are provided
+    if (lat && lng && maxKm) {
+      const userLat = parseFloat(lat);
+      const userLng = parseFloat(lng);
+      const maxDistance = parseFloat(maxKm);
+
+      providers = providers.filter((provider) => {
+        const distance = haversineKm(
+          { lat: userLat, lng: userLng },
+          provider.coords
+        );
+        return distance <= maxDistance;
+      });
+    }
 
     return NextResponse.json(providers);
   } catch (error) {

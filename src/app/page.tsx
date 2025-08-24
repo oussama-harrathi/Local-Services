@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import CategoryPills from '@/components/CategoryPills';
@@ -9,8 +10,6 @@ import MapPreview from '@/components/MapPreview';
 import TrustStrip from '@/components/TrustStrip';
 import CityCTA from '@/components/CityCTA';
 import Footer from '@/components/Footer';
-// import { mockProviders } from '@/lib/mockData'; // Replaced with API call
-import { haversineKm } from '@/lib/geo';
 import { CITY_CENTERS } from '@/lib/cities';
 import { Category, Provider } from '@/lib/types';
 
@@ -18,30 +17,39 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistance, setSelectedDistance] = useState(5);
-  const [isLoading, setIsLoading] = useState(true);
-  const [providers, setProviders] = useState<Provider[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch providers from API
-  useEffect(() => {
-    const fetchProviders = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/providers');
-        if (response.ok) {
-          const data = await response.json();
-          setProviders(data);
-        } else {
-          console.error('Failed to fetch providers');
-        }
-      } catch (error) {
-        console.error('Error fetching providers:', error);
-      } finally {
-        setIsLoading(false);
+  // Build query parameters for API call
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+    
+    if (selectedCity) params.append('city', selectedCity);
+    if (selectedCategory) params.append('category', selectedCategory);
+    if (searchQuery) params.append('q', searchQuery);
+    
+    // Add location-based filtering if city is selected
+    if (selectedCity && CITY_CENTERS[selectedCity]) {
+      const cityCenter = CITY_CENTERS[selectedCity];
+      params.append('lat', cityCenter.lat.toString());
+      params.append('lng', cityCenter.lng.toString());
+      params.append('maxKm', selectedDistance.toString());
+    }
+    
+    return params.toString();
+  }, [selectedCategory, selectedCity, selectedDistance, searchQuery]);
+
+  // Fetch providers using React Query
+  const { data: providers = [], isLoading, error } = useQuery({
+    queryKey: ['providers', queryParams],
+    queryFn: async () => {
+      const url = `/api/providers${queryParams ? `?${queryParams}` : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch providers');
       }
-    };
-
-    fetchProviders();
-  }, []);
+      return response.json() as Promise<Provider[]>;
+    },
+  });
 
   // Load saved preferences from localStorage
   useEffect(() => {
@@ -62,54 +70,29 @@ export default function Home() {
     }
   }, [selectedCity, selectedCategory]);
 
-  // Filter providers based on search criteria
-  const filteredProviders = useMemo(() => {
-    let filtered = [...providers];
-
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(provider => 
-        provider.categories.includes(selectedCategory)
-      );
-    }
-
-    // Filter by city
-    if (selectedCity) {
-      filtered = filtered.filter(provider => provider.city === selectedCity);
-    }
-
-    // Filter by distance
-    if (selectedCity && CITY_CENTERS[selectedCity]) {
-      const cityCenter = CITY_CENTERS[selectedCity];
-      filtered = filtered.filter(provider => {
-        const distance = haversineKm(cityCenter, provider.coords);
-        return distance <= selectedDistance;
-      });
-    }
-
-    return filtered;
-  }, [providers, selectedCategory, selectedCity, selectedDistance]);
+  // Providers are already filtered by the API, so we use them directly
+  const filteredProviders = providers;
 
   const handleSearch = (filters: {
     category: Category | '';
     city: string;
     distance: number;
+    query?: string;
   }) => {
-    setIsLoading(true);
+    setSelectedCategory(filters.category);
+    setSelectedCity(filters.city);
+    setSelectedDistance(filters.distance);
+    if (filters.query !== undefined) {
+      setSearchQuery(filters.query);
+    }
     
-    // Simulate search delay for better UX
+    // Scroll to results
     setTimeout(() => {
-      setSelectedCategory(filters.category);
-      setSelectedCity(filters.city);
-      setSelectedDistance(filters.distance);
-      setIsLoading(false);
-      
-      // Scroll to results
       const resultsSection = document.getElementById('results');
       if (resultsSection) {
         resultsSection.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 500);
+    }, 100);
   };
 
   const handleCategorySelect = (category: Category | '') => {

@@ -9,6 +9,7 @@ interface SearchBarProps {
     category: Category | '';
     city: string;
     distance: number;
+    query?: string;
   }) => void;
 }
 
@@ -27,9 +28,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [category, setCategory] = useState<Category | ''>('');
   const [city, setCity] = useState('');
   const [distance, setDistance] = useState(5);
+  const [query, setQuery] = useState('');
 
   const handleSearch = () => {
-    onSearch({ category, city, distance });
+    onSearch({ category, city, distance, query: query.trim() || undefined });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -40,7 +42,23 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        {/* Search Query Input */}
+        <div className="space-y-2">
+          <label htmlFor="query" className="block text-sm font-medium text-gray-700 h-5">
+            Search
+          </label>
+          <input
+            id="query"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Search providers..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
+          />
+        </div>
+
         {/* Category Select */}
         <div className="space-y-2">
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 h-5">

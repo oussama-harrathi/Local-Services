@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { mockProviders } from '../src/lib/mockData';
 
 const prisma = new PrismaClient();
 
@@ -15,8 +14,44 @@ async function main() {
 
   console.log('🗑️  Cleared existing data');
 
-  // Create users and provider profiles from mock data
-  for (const provider of mockProviders) {
+  // Create users and provider profiles from hardcoded data
+  const providersData = [
+    {
+      name: 'Sarah Johnson',
+      city: 'Tunis',
+      coords: { lat: 36.8065, lng: 10.1815 },
+      categories: ['cleaning'],
+      bio: 'Professional cleaning service with 5+ years experience',
+      avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+      whatsapp: '+216 20 123 456',
+      messenger: 'sarah.johnson',
+      review: { rating: 4.8, count: 12 }
+    },
+    {
+      name: 'Ahmed Ben Ali',
+      city: 'Sousse',
+      coords: { lat: 35.8256, lng: 10.6369 },
+      categories: ['repairs'],
+      bio: 'Expert handyman for all your repair needs',
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      whatsapp: '+216 25 789 012',
+      messenger: 'ahmed.benali',
+      review: { rating: 4.9, count: 8 }
+    },
+    {
+      name: 'Maria Rossi',
+      city: 'Budapest',
+      coords: { lat: 47.4979, lng: 19.0402 },
+      categories: ['food_home'],
+      bio: 'Authentic Italian cuisine prepared in your home',
+      avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      whatsapp: '+36 30 456 789',
+      messenger: 'maria.rossi',
+      review: { rating: 4.7, count: 15 }
+    }
+  ];
+
+  for (const provider of providersData) {
     // Create a fake user for each provider
     const user = await prisma.user.create({
       data: {
@@ -62,8 +97,8 @@ async function main() {
     reviewerUsers.push(reviewer);
   }
 
-  // Create reviews based on the mock data review counts and ratings
-  for (const provider of mockProviders) {
+  // Create reviews based on the provider data review counts and ratings
+  for (const provider of providersData) {
     const dbProvider = providers.find((p: { name: string }) => p.name === provider.name);
     if (!dbProvider) continue;
 
