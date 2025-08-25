@@ -1,45 +1,49 @@
 'use client';
 
 import { MapPin, ArrowRight, Users } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CityCTAProps {
   onCitySelect: (city: string) => void;
 }
 
-const cities = [
+const getCities = (t: any) => [
   {
     name: 'Tunis',
-    country: 'Tunisia',
-    description: 'Discover authentic Tunisian cuisine, traditional crafts, and local services in the heart of Tunisia.',
+    country: t('cities.tunisia'),
+    description: t('cities.tunisDescription'),
     providerCount: '50+',
     gradient: 'from-blue-500 to-blue-600'
   },
   {
     name: 'Sousse',
-    country: 'Tunisia',
-    description: 'Coastal city charm with fresh seafood, beach services, and Mediterranean hospitality.',
+    country: t('cities.tunisia'),
+    description: t('cities.sousseDescription'),
     providerCount: '30+',
     gradient: 'from-teal-500 to-teal-600'
   },
   {
     name: 'Budapest',
-    country: 'Hungary',
-    description: 'Experience Hungarian culture through local providers offering traditional services and cuisine.',
+    country: t('cities.hungary'),
+    description: t('cities.budapestDescription'),
     providerCount: '40+',
     gradient: 'from-purple-500 to-purple-600'
   }
 ];
 
 export default function CityCTA({ onCitySelect }: CityCTAProps) {
+  const { t } = useLanguage();
+  const cities = getCities(t);
+
   return (
     <section id="cities" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Explore local services by city
+            {t('cities.exploreByCity')}
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Connect with trusted local providers in Tunisia and Hungary
+            {t('cities.connectWithProviders')}
           </p>
         </div>
         
@@ -78,10 +82,10 @@ export default function CityCTA({ onCitySelect }: CityCTAProps) {
                 <button
                   onClick={() => onCitySelect(city.name)}
                   className="w-full bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center justify-center space-x-2 group"
-                  aria-label={`Explore providers in ${city.name}`}
+                  aria-label={`${t('cities.exploreProviders')} ${city.name}`}
                 >
-                  <span>Explore {city.name}</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <span>{t('cities.explore')} {city.name}</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 rtl-flip" />
                 </button>
               </div>
             </div>
@@ -90,9 +94,9 @@ export default function CityCTA({ onCitySelect }: CityCTAProps) {
         
         <div className="mt-12 text-center">
           <p className="text-gray-500 text-sm">
-            More cities coming soon! 
+            {t('cities.moreCitiesComingSoon')} 
             <a href="/signup" className="text-blue-600 hover:text-blue-700 font-medium ml-1">
-              Join our waitlist
+              {t('cities.joinWaitlist')}
             </a>
           </p>
         </div>

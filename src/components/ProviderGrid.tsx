@@ -3,6 +3,7 @@
 import { Provider } from '@/lib/types';
 import ProviderCard from './ProviderCard';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ProviderGridProps {
   providers: Provider[];
@@ -10,6 +11,8 @@ interface ProviderGridProps {
 }
 
 export default function ProviderGrid({ providers, isLoading = false }: ProviderGridProps) {
+  const { t } = useLanguage();
+  
   if (isLoading) {
     return (
       <div className="py-12">
@@ -35,16 +38,11 @@ export default function ProviderGrid({ providers, isLoading = false }: ProviderG
               <Search className="w-12 h-12 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No providers found
+              {t('provider.noProvidersFound')}
             </h3>
             <p className="text-gray-600 max-w-md mx-auto mb-6">
-              We couldn't find any providers matching your search criteria. Try adjusting your filters or expanding your search area.
+              {t('provider.tryAdjustingFilters')}
             </p>
-            <div className="space-y-2 text-sm text-gray-500">
-              <p>• Try selecting "All categories" or a different category</p>
-              <p>• Increase the distance range</p>
-              <p>• Select "All cities" to see providers from other areas</p>
-            </div>
           </div>
         </div>
       </div>

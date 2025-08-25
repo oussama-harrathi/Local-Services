@@ -2,61 +2,65 @@
 
 import { Category } from '@/lib/types';
 import { ChefHat, Scissors, Sparkles, GraduationCap, Wrench } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CategoryPillsProps {
   selectedCategory: Category | '';
   onCategorySelect: (category: Category | '') => void;
 }
 
-const categories = [
+const getCategoriesWithTranslations = (t: any) => [
   {
     value: '' as const,
-    label: 'All',
+    label: t('categories.all'),
     icon: null,
     color: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
   },
   {
     value: 'food_home' as const,
-    label: 'Food at home',
+    label: t('categories.food_home'),
     icon: ChefHat,
     color: 'bg-orange-100 text-orange-700 hover:bg-orange-200'
   },
   {
     value: 'haircut_mobile' as const,
-    label: 'Haircut at home',
+    label: t('categories.haircut_mobile'),
     icon: Scissors,
     color: 'bg-purple-100 text-purple-700 hover:bg-purple-200'
   },
   {
     value: 'cleaning' as const,
-    label: 'Cleaning',
+    label: t('categories.cleaning'),
     icon: Sparkles,
     color: 'bg-blue-100 text-blue-700 hover:bg-blue-200'
   },
   {
     value: 'tutoring' as const,
-    label: 'Tutoring',
+    label: t('categories.tutoring'),
     icon: GraduationCap,
     color: 'bg-green-100 text-green-700 hover:bg-green-200'
   },
   {
     value: 'repairs' as const,
-    label: 'Repairs',
+    label: t('categories.repairs'),
     icon: Wrench,
     color: 'bg-red-100 text-red-700 hover:bg-red-200'
   },
 ];
 
 export default function CategoryPills({ selectedCategory, onCategorySelect }: CategoryPillsProps) {
+  const { t } = useLanguage();
+  const categories = getCategoriesWithTranslations(t);
+  
   return (
     <section id="categories" className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Browse by category
+            {t('categories.browseByCategory')}
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Find the perfect local provider for your needs
+            {t('categories.findPerfectProvider')}
           </p>
         </div>
         

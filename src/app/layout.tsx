@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/QueryProvider";
 import SessionProvider from "@/components/SessionProvider";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Toaster } from "react-hot-toast";
+import RootLayoutClient from "./RootLayoutClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,15 +41,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SessionProvider>
-          <QueryProvider>
-            {children}
-            <Toaster position="top-right" />
-          </QueryProvider>
-        </SessionProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <LanguageProvider>
+          <RootLayoutClient>
+            <SessionProvider>
+              <QueryProvider>
+                {children}
+                <Toaster position="top-right" />
+              </QueryProvider>
+            </SessionProvider>
+          </RootLayoutClient>
+        </LanguageProvider>
       </body>
     </html>
   );

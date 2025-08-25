@@ -157,7 +157,7 @@ export default function ProviderDetailPage() {
             onClick={() => router.back()}
             className="mb-6 text-white hover:bg-white/10 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2 rtl-flip" />
             Back
           </Button>
           <div className="flex items-start gap-8">

@@ -51,24 +51,17 @@ export default function Home() {
     },
   });
 
-  // Load saved preferences from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedCity = localStorage.getItem('localspark_city');
-      const savedCategory = localStorage.getItem('localspark_category');
-      
-      if (savedCity) setSelectedCity(savedCity);
-      if (savedCategory) setSelectedCategory(savedCategory as Category | '');
-    }
-  }, []);
+  // Note: Removed auto-loading of saved preferences to ensure clean initial state
+  // Users will start with 'All Categories' and 'All Cities' by default
 
-  // Save preferences to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (selectedCity) localStorage.setItem('localspark_city', selectedCity);
-      if (selectedCategory) localStorage.setItem('localspark_category', selectedCategory);
-    }
-  }, [selectedCity, selectedCategory]);
+  // Optional: Save preferences to localStorage for user convenience
+  // This can be re-enabled if you want to remember user selections across sessions
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     if (selectedCity) localStorage.setItem('localspark_city', selectedCity);
+  //     if (selectedCategory) localStorage.setItem('localspark_category', selectedCategory);
+  //   }
+  // }, [selectedCity, selectedCategory]);
 
   // Providers are already filtered by the API, so we use them directly
   const filteredProviders = providers;

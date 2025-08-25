@@ -1,8 +1,10 @@
 'use client';
 
 import { Heart, Shield, FileText } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -15,19 +17,18 @@ export default function Footer() {
               <span className="text-2xl font-bold text-blue-400">LocalSpark</span>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed max-w-md">
-              Connecting communities with trusted local service providers. 
-              Find authentic experiences and support local businesses in Tunisia and Hungary.
+              {t('footer.brandDescription')}
             </p>
             <div className="flex items-center space-x-1 mt-4 text-sm text-gray-400">
-              <span>Made with</span>
+              <span>{t('footer.madeWith')}</span>
               <Heart className="w-4 h-4 text-red-500" />
-              <span>for local communities</span>
+              <span>{t('footer.forCommunities')}</span>
             </div>
           </div>
           
           {/* Legal Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-3">
               <li>
                 <a 
@@ -35,7 +36,7 @@ export default function Footer() {
                   className="text-gray-300 hover:text-white transition-colors text-sm flex items-center space-x-2"
                 >
                   <FileText className="w-4 h-4" />
-                  <span>Terms of Service</span>
+                  <span>{t('footer.termsOfService')}</span>
                 </a>
               </li>
               <li>
@@ -44,7 +45,7 @@ export default function Footer() {
                   className="text-gray-300 hover:text-white transition-colors text-sm flex items-center space-x-2"
                 >
                   <Shield className="w-4 h-4" />
-                  <span>Privacy Policy</span>
+                  <span>{t('footer.privacyPolicy')}</span>
                 </a>
               </li>
             </ul>
@@ -52,14 +53,14 @@ export default function Footer() {
           
           {/* Support */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Support</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.support')}</h3>
             <ul className="space-y-3">
               <li>
                 <a 
                   href="/help" 
                   className="text-gray-300 hover:text-white transition-colors text-sm"
                 >
-                  Help Center
+                  {t('footer.helpCenter')}
                 </a>
               </li>
               <li>
@@ -67,7 +68,7 @@ export default function Footer() {
                   href="/contact" 
                   className="text-gray-300 hover:text-white transition-colors text-sm"
                 >
-                  Contact Us
+                  {t('footer.contactUs')}
                 </a>
               </li>
               <li>
@@ -75,7 +76,7 @@ export default function Footer() {
                   href="/signup" 
                   className="text-blue-400 hover:text-blue-300 transition-colors text-sm font-medium"
                 >
-                  List your service
+                  {t('footer.listYourService')}
                 </a>
               </li>
             </ul>
@@ -88,12 +89,9 @@ export default function Footer() {
             <div className="flex items-start space-x-3">
               <Shield className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-semibold text-yellow-500 mb-1">Marketplace Disclaimer</h4>
+                <h4 className="text-sm font-semibold text-yellow-500 mb-1">{t('footer.marketplaceDisclaimer')}</h4>
                 <p className="text-xs text-gray-300 leading-relaxed">
-                  LocalSpark is a platform that connects people with local service providers. 
-                  We do not employ these providers directly. All providers are independent contractors 
-                  responsible for their own qualifications, licensing, insurance, and tax obligations. 
-                  Please verify credentials and discuss terms directly with providers before engaging their services.
+                  {t('footer.disclaimerText')}
                 </p>
               </div>
             </div>
@@ -101,15 +99,15 @@ export default function Footer() {
           
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © {currentYear} LocalSpark. All rights reserved.
+              © {currentYear} LocalSpark. {t('footer.allRightsReserved')}
             </p>
             
             <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span>Tunisia</span>
+              <span>{t('cities.tunisia')}</span>
               <span>•</span>
-              <span>Hungary</span>
+              <span>{t('cities.hungary')}</span>
               <span>•</span>
-              <span>More cities coming soon</span>
+              <span>{t('cities.moreCitiesComingSoon')}</span>
             </div>
           </div>
         </div>

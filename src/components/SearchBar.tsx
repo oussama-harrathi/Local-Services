@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import { Category } from '@/lib/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SearchBarProps {
   onSearch: (filters: {
@@ -13,22 +14,23 @@ interface SearchBarProps {
   }) => void;
 }
 
-const categories = [
-  { value: '', label: 'All categories' },
-  { value: 'food_home', label: 'Food at home' },
-  { value: 'haircut_mobile', label: 'Haircut at home' },
-  { value: 'cleaning', label: 'Cleaning' },
-  { value: 'tutoring', label: 'Tutoring' },
-  { value: 'repairs', label: 'Repairs' },
-] as const;
-
 const cities = ['', 'Tunis', 'Sousse', 'Budapest'];
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  const { t } = useLanguage();
   const [category, setCategory] = useState<Category | ''>('');
   const [city, setCity] = useState('');
   const [distance, setDistance] = useState(5);
   const [query, setQuery] = useState('');
+
+  const categories = [
+    { value: '', label: t('search.allCategories') },
+    { value: 'food_home', label: t('categories.food_home') },
+    { value: 'mobile_barber', label: t('categories.mobile_barber') },
+    { value: 'cleaning', label: t('categories.cleaning') },
+    { value: 'tutoring', label: t('categories.tutoring') },
+    { value: 'repairs', label: t('categories.repairs') },
+  ] as const;
 
   const handleSearch = () => {
     onSearch({ category, city, distance, query: query.trim() || undefined });
@@ -46,7 +48,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         {/* Search Query Input */}
         <div className="space-y-2">
           <label htmlFor="query" className="block text-sm font-medium text-gray-700 h-5">
-            Search
+            {t('search.searchPlaceholder')}
           </label>
           <input
             id="query"
@@ -54,7 +56,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Search providers..."
+            placeholder={t('search.searchPlaceholder')}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10 text-gray-900"
           />
         </div>
@@ -62,7 +64,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         {/* Category Select */}
         <div className="space-y-2">
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 h-5">
-            Service
+            {t('search.allCategories')}
           </label>
           <select
             id="category"
@@ -86,7 +88,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div className="space-y-2">
           <label htmlFor="city" className="block text-sm font-medium text-gray-700 h-5">
             <MapPin className="inline w-4 h-4 mr-1" />
-            City
+            {t('search.allCities')}
           </label>
           <select
             id="city"
@@ -98,7 +100,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               backgroundColor: '#ffffff'
             }}
           >
-            <option value="">All cities</option>
+            <option value="">{t('search.allCities')}</option>
             {cities.slice(1).map((cityOption) => (
               <option key={cityOption} value={cityOption}>
                 {cityOption}
@@ -110,7 +112,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         {/* Distance Slider */}
         <div className="space-y-2">
           <label htmlFor="distance" className="block text-sm font-medium text-gray-700 h-5">
-            Distance: {distance} km
+            {t('search.maxDistance')}
           </label>
           <div className="flex items-center space-x-2 h-10">
             <span className="text-xs text-gray-500">2</span>
@@ -138,7 +140,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             aria-label="Search for providers"
           >
             <Search className="w-4 h-4" />
-            <span>Search</span>
+            <span>{t('search.searchButton')}</span>
           </button>
         </div>
       </div>

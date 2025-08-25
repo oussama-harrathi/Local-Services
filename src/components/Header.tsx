@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { ChevronDown, Globe, User, LogOut } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Header() {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { data: session, status } = useSession();
+  const { language, setLanguage, t, languageNames } = useLanguage();
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -53,24 +55,26 @@ export default function Header() {
                 aria-label="Select language"
               >
                 <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">EN</span>
+                <span className="hidden sm:inline">{language.toUpperCase()}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               
               {isLanguageOpen && (
                 <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    English
-                  </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Français
-                  </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    العربية
-                  </button>
-                  <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Magyar
-                  </button>
+                  {Object.entries(languageNames).map(([code, name]) => (
+                    <button
+                      key={code}
+                      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                        language === code ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+                      }`}
+                      onClick={() => {
+                        setLanguage(code as any);
+                        setIsLanguageOpen(false);
+                      }}
+                    >
+                      {name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

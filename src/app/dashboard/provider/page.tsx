@@ -150,7 +150,7 @@ export default function ProviderDashboard() {
           onClick={() => router.back()}
           className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-6"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-4 h-4 mr-2 rtl-flip" />
           Back
         </button>
         
