@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ProviderProfile {
   id: string;
@@ -146,7 +147,7 @@ export default function AdminPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <LoadingSpinner size="lg" text="Loading admin dashboard..." />
       </div>
     );
   }
@@ -205,7 +206,9 @@ export default function AdminPage() {
             </div>
             <div className="divide-y divide-gray-200">
               {providersLoading ? (
-                <div className="p-6 text-center">Loading providers...</div>
+                <div className="p-6 text-center">
+                  <LoadingSpinner size="md" text="Loading providers..." />
+                </div>
               ) : providers?.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">No providers to review</div>
               ) : (
@@ -241,22 +244,22 @@ export default function AdminPage() {
                       </div>
                       <div className="flex space-x-2 ml-4">
                         {!provider.isVerified && (
-                          <button
+                          <LoadingButton
                             onClick={() => verifyProviderMutation.mutate(provider.id)}
-                            disabled={verifyProviderMutation.isPending}
+                            isLoading={verifyProviderMutation.isPending && verifyProviderMutation.variables === provider.id}
                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                           >
                             Verify
-                          </button>
+                          </LoadingButton>
                         )}
-                        <button
+                        <LoadingButton
                           onClick={() =>
                             toggleProviderVisibilityMutation.mutate({
                               providerId: provider.id,
                               isHidden: !provider.isHidden,
                             })
                           }
-                          disabled={toggleProviderVisibilityMutation.isPending}
+                          isLoading={toggleProviderVisibilityMutation.isPending && toggleProviderVisibilityMutation.variables?.providerId === provider.id}
                           className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md ${
                             provider.isHidden
                               ? 'text-white bg-blue-600 hover:bg-blue-700'
@@ -264,7 +267,7 @@ export default function AdminPage() {
                           } disabled:opacity-50`}
                         >
                           {provider.isHidden ? 'Show' : 'Hide'}
-                        </button>
+                        </LoadingButton>
                       </div>
                     </div>
                   </div>
@@ -283,7 +286,9 @@ export default function AdminPage() {
             </div>
             <div className="divide-y divide-gray-200">
               {reportsLoading ? (
-                <div className="p-6 text-center">Loading reports...</div>
+                <div className="p-6 text-center">
+                  <LoadingSpinner size="md" text="Loading reports..." />
+                </div>
               ) : reports?.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">No open reports</div>
               ) : (
@@ -325,21 +330,21 @@ export default function AdminPage() {
                       </div>
                       <div className="flex space-x-2 ml-4">
                         {report.targetType === 'review' && (
-                          <button
+                          <LoadingButton
                             onClick={() => deleteReviewMutation.mutate(report.targetId)}
-                            disabled={deleteReviewMutation.isPending}
+                            isLoading={deleteReviewMutation.isPending && deleteReviewMutation.variables === report.targetId}
                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
                           >
                             Delete Review
-                          </button>
+                          </LoadingButton>
                         )}
-                        <button
+                        <LoadingButton
                           onClick={() => resolveReportMutation.mutate(report.id)}
-                          disabled={resolveReportMutation.isPending}
+                          isLoading={resolveReportMutation.isPending && resolveReportMutation.variables === report.id}
                           className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                         >
                           Resolve
-                        </button>
+                        </LoadingButton>
                       </div>
                     </div>
                   </div>

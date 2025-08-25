@@ -5,6 +5,7 @@ import { ChevronDown, Globe, User, LogOut } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LoadingLink } from './LoadingLink';
 
 export default function Header() {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -18,9 +19,9 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            <LoadingLink href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
               LocalSpark
-            </a>
+            </LoadingLink>
           </div>
 
           {/* Navigation - Hidden on mobile */}
@@ -95,13 +96,13 @@ export default function Header() {
                 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                    <Link
+                    <LoadingLink
                       href="/dashboard/provider"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       Provider Dashboard
-                    </Link>
+                    </LoadingLink>
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
@@ -123,12 +124,12 @@ export default function Header() {
                 >
                   Sign in
                 </button>
-                <Link
+                <LoadingLink
                   href="/dashboard/provider"
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   List your service
-                </Link>
+                </LoadingLink>
               </div>
             )}
           </div>

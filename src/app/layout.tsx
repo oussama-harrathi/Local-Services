@@ -6,6 +6,7 @@ import SessionProvider from "@/components/SessionProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Toaster } from "react-hot-toast";
 import RootLayoutClient from "./RootLayoutClient";
+import { RouteLoader, RouteLoadingProvider } from "@/components/PageLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,7 +47,10 @@ export default function RootLayout({
           <RootLayoutClient>
             <SessionProvider>
               <QueryProvider>
-                {children}
+                <RouteLoadingProvider>
+                  {children}
+                  <RouteLoader />
+                </RouteLoadingProvider>
                 <Toaster position="top-right" />
               </QueryProvider>
             </SessionProvider>

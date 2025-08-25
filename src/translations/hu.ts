@@ -428,6 +428,24 @@ export const hu = {
         }
       },
 
+      // How it works section
+      howItWorks: {
+        title: 'Hogyan működik',
+        subtitle: 'Találjon és kapcsolódjon megbízható helyi szolgáltatókhoz néhány egyszerű lépésben',
+        step1: {
+          title: 'Keresés és felfedezés',
+          description: 'Böngésszen az ellenőrzött helyi szolgáltatók között kategória, helyszín és értékelések alapján, hogy megtalálja pontosan azt, amire szüksége van'
+        },
+        step2: {
+          title: 'Közvetlen kapcsolat',
+          description: 'Lépjen kapcsolatba a szolgáltatókkal WhatsApp, Messenger vagy telefon útján, hogy megbeszélje igényeit'
+        },
+        step3: {
+          title: 'Élvezze és értékelje',
+          description: 'Élvezze a minőségi szolgáltatásokat és ossza meg tapasztalatait, hogy segítse közösségünk növekedését'
+        }
+      },
+
       // Signup Page
       signup: {
         title: 'Csatlakozzon szolgáltatóként',

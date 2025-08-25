@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { ReviewModal } from '@/components/ReviewModal';
+import { ReportModal } from '@/components/ReportModal';
+import { LoadingSpinner, LoadingPulse } from '@/components/ui/LoadingSpinner';
 
 interface Review {
   id: string;
@@ -48,6 +51,8 @@ export default function ProviderDetailPage() {
   const { toast } = useToast();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProvider = async () => {
@@ -108,24 +113,30 @@ export default function ProviderDetailPage() {
         {/* Loading Hero */}
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700">
           <div className="container mx-auto px-4 py-12">
-            <div className="animate-pulse flex items-start gap-8">
-              <div className="w-32 h-32 bg-white/20 rounded-full"></div>
+            <div className="flex items-start gap-8">
+              <LoadingPulse className="w-32 h-32 bg-white/20 rounded-full" />
               <div className="flex-1 space-y-4">
-                <div className="h-8 bg-white/20 rounded w-1/3"></div>
-                <div className="h-4 bg-white/20 rounded w-1/2"></div>
-                <div className="h-4 bg-white/20 rounded w-2/3"></div>
+                <LoadingPulse className="h-8 bg-white/20 rounded w-1/3" />
+                <LoadingPulse className="h-4 bg-white/20 rounded w-1/2" />
+                <LoadingPulse className="h-4 bg-white/20 rounded w-2/3" />
               </div>
             </div>
           </div>
         </div>
         {/* Loading Content */}
         <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-white/60 rounded-xl shadow-lg"></div>
-              <div className="h-96 bg-white/60 rounded-xl shadow-lg"></div>
+              <LoadingPulse className="h-64 bg-white/60 rounded-xl shadow-lg" />
+              <LoadingPulse className="h-96 bg-white/60 rounded-xl shadow-lg" />
             </div>
-            <div className="h-96 bg-white/60 rounded-xl shadow-lg"></div>
+            <LoadingPulse className="h-96 bg-white/60 rounded-xl shadow-lg" />
+          </div>
+        </div>
+        {/* Loading Indicator */}
+        <div className="fixed bottom-8 right-8">
+          <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-xl">
+            <LoadingSpinner size="md" text="Loading provider details..." />
           </div>
         </div>
       </div>
@@ -236,10 +247,19 @@ export default function ProviderDetailPage() {
             {/* Reviews */}
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
-                <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
-                  Reviews ({provider.review.count})
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                    Reviews ({provider.review.count})
+                  </CardTitle>
+                  <Button
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Write Review
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-6">
                 {provider.reviews.length > 0 ? (
@@ -276,6 +296,13 @@ export default function ProviderDetailPage() {
                     </div>
                     <p className="text-gray-500 text-lg">No reviews yet.</p>
                     <p className="text-gray-400 text-sm">Be the first to leave a review!</p>
+                    <Button
+                      onClick={() => setIsReviewModalOpen(true)}
+                      className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Write First Review
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -319,11 +346,43 @@ export default function ProviderDetailPage() {
                     <p className="text-gray-400 text-sm">Provider hasn't added contact info yet</p>
                   </div>
                 )}
+                <Separator className="my-4" />
+                <Button
+                  onClick={() => setIsReportModalOpen(true)}
+                  variant="outline"
+                  className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+                >
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report Provider
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        providerId={provider.id}
+        onSuccess={() => {
+          // Refresh provider data to show new review
+          window.location.reload();
+        }}
+      />
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        targetType="provider"
+        targetId={provider.id}
+        onSuccess={() => {
+          toast({
+            title: 'Report Submitted',
+            description: 'Thank you for your report. We will review it shortly.',
+          });
+        }}
+      />
     </div>
   );
 }

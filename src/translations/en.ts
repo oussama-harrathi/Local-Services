@@ -204,6 +204,24 @@ export const en = {
     }
    },
 
+  // How it works section
+  howItWorks: {
+    title: 'How it works',
+    subtitle: 'Find and connect with trusted local service providers in just a few simple steps',
+    step1: {
+      title: 'Search & Discover',
+      description: 'Browse verified local providers by category, location, and ratings to find exactly what you need'
+    },
+    step2: {
+      title: 'Connect Directly',
+      description: 'Contact providers through WhatsApp, Messenger, or phone to discuss your requirements'
+    },
+    step3: {
+      title: 'Enjoy & Review',
+      description: 'Enjoy quality services and share your experience to help our community grow'
+    }
+  },
+
   // Contact Page
   contact: {
     title: 'Contact Us',

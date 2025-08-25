@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 interface ProviderProfile {
   id?: string
@@ -296,13 +297,13 @@ export default function ProviderDashboard() {
 
             {/* Submit Button */}
             <div className="flex justify-end">
-              <button
+              <LoadingButton
                 type="submit"
-                disabled={saveProfileMutation.isPending}
+                isLoading={saveProfileMutation.isPending}
                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saveProfileMutation.isPending ? 'Saving...' : 'Save Profile'}
-              </button>
+              </LoadingButton>
             </div>
           </form>
         </div>

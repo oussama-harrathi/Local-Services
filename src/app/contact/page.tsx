@@ -3,8 +3,10 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft, Mail, MessageCircle, Phone, MapPin, Send } from 'lucide-react';
 import Link from 'next/link';
+import { LoadingLink } from '@/components/LoadingLink';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { LoadingButton } from '@/components/ui/LoadingSpinner';
 
 export default function ContactPage() {
   const { t } = useLanguage();
@@ -115,18 +117,18 @@ export default function ContactPage() {
                   {t('contact.quickLinks')}
                 </h3>
                 <div className="space-y-2">
-                  <Link href="/help" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  <LoadingLink href="/help" className="block text-blue-600 hover:text-blue-800 transition-colors">
                     {t('contact.helpCenter')}
-                  </Link>
-                  <Link href="/signup" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  </LoadingLink>
+                  <LoadingLink href="/signup" className="block text-blue-600 hover:text-blue-800 transition-colors">
                     {t('contact.becomeProvider')}
-                  </Link>
-                  <Link href="/terms" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  </LoadingLink>
+                  <LoadingLink href="/terms" className="block text-blue-600 hover:text-blue-800 transition-colors">
                     {t('contact.termsOfService')}
-                  </Link>
-                  <Link href="/privacy" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  </LoadingLink>
+                  <LoadingLink href="/privacy" className="block text-blue-600 hover:text-blue-800 transition-colors">
                     {t('contact.privacyPolicy')}
-                  </Link>
+                  </LoadingLink>
                 </div>
               </div>
             </div>
@@ -231,23 +233,14 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <button
+                  <LoadingButton
                     type="submit"
-                    disabled={isSubmitting}
+                    isLoading={isSubmitting}
                     className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>{t('contact.form.sending')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5" />
-                        <span>{t('contact.form.sendMessage')}</span>
-                      </>
-                    )}
-                  </button>
+                    <Send className="w-5 h-5" />
+                    <span>{isSubmitting ? t('contact.form.sending') : t('contact.form.sendMessage')}</span>
+                  </LoadingButton>
                 </form>
               )}
             </div>

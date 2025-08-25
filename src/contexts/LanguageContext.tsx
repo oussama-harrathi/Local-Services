@@ -8,6 +8,7 @@ interface LanguageContextType {
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
   languageNames: Record<Language, string>;
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -29,6 +30,7 @@ interface LanguageProviderProps {
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguageState] = useState<Language>('en');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load language from localStorage on mount
   useEffect(() => {
@@ -44,7 +46,17 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   }, [language]);
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
+    if (lang === language) {
+      return; // Don't show loading if same language
+    }
+    setIsLoading(true);
+    // Simulate loading time for language switch
+    setTimeout(() => {
+      setLanguageState(lang);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 100); // Small delay to ensure UI updates
+    }, 200);
   };
 
   // Helper function to get nested translation
@@ -70,7 +82,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     language,
     setLanguage,
     t,
-    languageNames
+    languageNames,
+    isLoading
   };
 
   return (

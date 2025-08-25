@@ -451,6 +451,24 @@ export const fr = {
     contactUs: 'Nous contacter'
   },
 
+  // How it works section
+  howItWorks: {
+    title: 'Comment ça marche',
+    subtitle: 'Trouvez et connectez-vous avec des prestataires de services locaux de confiance en quelques étapes simples',
+    step1: {
+      title: 'Rechercher et découvrir',
+      description: 'Parcourez les prestataires locaux vérifiés par catégorie, localisation et évaluations pour trouver exactement ce dont vous avez besoin'
+    },
+    step2: {
+      title: 'Connecter directement',
+      description: 'Contactez les prestataires via WhatsApp, Messenger ou téléphone pour discuter de vos besoins'
+    },
+    step3: {
+      title: 'Profiter et évaluer',
+      description: 'Profitez de services de qualité et partagez votre expérience pour aider notre communauté à grandir'
+    }
+  },
+
   // Signup Page
   signup: {
     hero: {

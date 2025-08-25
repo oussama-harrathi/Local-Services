@@ -4,6 +4,7 @@ import { Provider } from '@/lib/types';
 import ProviderCard from './ProviderCard';
 import { Search } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LoadingPulse } from './ui/LoadingSpinner';
 
 interface ProviderGridProps {
   providers: Provider[];
@@ -19,8 +20,17 @@ export default function ProviderGrid({ providers, isLoading = false }: ProviderG
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-200 rounded-2xl h-80"></div>
+              <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <LoadingPulse className="h-48 bg-gradient-to-br from-gray-200 to-gray-300" />
+                <div className="p-4 space-y-3">
+                  <LoadingPulse className="h-6 bg-gray-200 rounded w-3/4" />
+                  <LoadingPulse className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="flex gap-2">
+                    <LoadingPulse className="h-6 bg-gray-200 rounded-full w-16" />
+                    <LoadingPulse className="h-6 bg-gray-200 rounded-full w-20" />
+                  </div>
+                  <LoadingPulse className="h-10 bg-gray-200 rounded w-full" />
+                </div>
               </div>
             ))}
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import CategoryPills from '@/components/CategoryPills';
@@ -14,6 +15,7 @@ import { CITY_CENTERS } from '@/lib/cities';
 import { Category, Provider } from '@/lib/types';
 
 export default function Home() {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistance, setSelectedDistance] = useState(5);
@@ -173,6 +175,58 @@ export default function Home() {
           </section>
           
           <TrustStrip />
+          
+          {/* How It Works Section */}
+          <section id="how-it-works" className="bg-white py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  {t('howItWorks.title')}
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  {t('howItWorks.subtitle')}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-blue-600">1</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {t('howItWorks.step1.title')}
+                  </h3>
+                  <p className="text-gray-600">
+                    {t('howItWorks.step1.description')}
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-blue-600">2</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {t('howItWorks.step2.title')}
+                  </h3>
+                  <p className="text-gray-600">
+                    {t('howItWorks.step2.description')}
+                  </p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-blue-600">3</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {t('howItWorks.step3.title')}
+                  </h3>
+                  <p className="text-gray-600">
+                    {t('howItWorks.step3.description')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
           
           <CityCTA onCitySelect={handleCitySelect} />
         </main>
