@@ -109,6 +109,23 @@ export default function AdminPage() {
     },
   });
 
+  const deleteProviderMutation = useMutation({
+    mutationFn: async (providerId: string) => {
+      const response = await fetch(`/api/admin/providers/${providerId}/delete`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete provider');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'providers'] });
+      toast.success('Provider deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete provider');
+    },
+  });
+
   // Report actions
   const resolveReportMutation = useMutation({
     mutationFn: async (reportId: string) => {
@@ -267,6 +284,17 @@ export default function AdminPage() {
                           } disabled:opacity-50`}
                         >
                           {provider.isHidden ? 'Show' : 'Hide'}
+                        </LoadingButton>
+                        <LoadingButton
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete provider "${provider.name}"? This action cannot be undone and will remove all associated data including reviews, favorites, and reports.`)) {
+                              deleteProviderMutation.mutate(provider.id);
+                            }
+                          }}
+                          isLoading={deleteProviderMutation.isPending && deleteProviderMutation.variables === provider.id}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                        >
+                          Delete
                         </LoadingButton>
                       </div>
                     </div>

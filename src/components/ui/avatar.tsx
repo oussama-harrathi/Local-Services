@@ -20,17 +20,37 @@ Avatar.displayName = 'Avatar';
 const AvatarImage = React.forwardRef<
   HTMLImageElement,
   React.ImgHTMLAttributes<HTMLImageElement> & { src: string; alt: string }
->(({ className, src, alt, width, height, ...props }, ref) => (
-  <Image
-    ref={ref}
-    src={src}
-    alt={alt}
-    width={40}
-    height={40}
-    className={cn('aspect-square h-full w-full object-cover', className)}
-    {...props}
-  />
-));
+>(({ className, src, alt, width, height, ...props }, ref) => {
+  // Check if it's a base64 image
+  if (src && src.startsWith('data:image/') && src.length > 50) {
+    return (
+      <img
+        ref={ref}
+        src={src}
+        alt={alt}
+        className={cn('aspect-square h-full w-full object-cover', className)}
+        onError={(e) => {
+          // Hide the broken image on error
+          e.currentTarget.style.display = 'none';
+        }}
+        {...props}
+      />
+    );
+  }
+  
+  // Use Next.js Image for regular URLs
+  return (
+    <Image
+      ref={ref}
+      src={src}
+      alt={alt}
+      width={40}
+      height={40}
+      className={cn('aspect-square h-full w-full object-cover', className)}
+      {...props}
+    />
+  );
+});
 AvatarImage.displayName = 'AvatarImage';
 
 const AvatarFallback = React.forwardRef<

@@ -39,11 +39,30 @@ export default function MapPreview({ providers, selectedCity }: MapPreviewProps)
       const map = L.map(mapRef.current).setView([center.lat, center.lng], zoom);
       mapInstanceRef.current = map;
 
-      // Add tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Add tile layer with error handling
+      const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
-        maxZoom: 18,
-      }).addTo(map);
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
+        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+      });
+
+      // Add error handling for tile loading
+      tileLayer.on('tileerror', function(error: any) {
+        console.warn('Tile loading error:', error);
+        // Fallback to CartoDB tiles on error
+        if (error.tile && error.tile.src.includes('openstreetmap.org')) {
+          const fallbackLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+          });
+          map.removeLayer(tileLayer);
+          fallbackLayer.addTo(map);
+        }
+      });
+
+      tileLayer.addTo(map);
 
       // Define custom marker icon
       const customIcon = L.icon({

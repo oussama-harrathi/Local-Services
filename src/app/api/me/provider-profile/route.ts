@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 
 const providerProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
   bio: z.string().min(1, 'Bio is required'),
   city: z.string().min(1, 'City is required'),
   latitude: z.number(),
@@ -24,16 +25,28 @@ export async function GET() {
     }
 
     const profile = await prisma.providerProfile.findUnique({
-      where: {
-        userId: session.user.id
-      }
+      where: { userId: session.user.id },
+      include: { user: true }
     })
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    return NextResponse.json(profile)
+    return NextResponse.json({
+      id: profile.id,
+      name: profile.name,
+      bio: profile.bio,
+      city: profile.city,
+      lat: profile.lat,
+      lng: profile.lng,
+      categories: profile.categories ? profile.categories.split(',').map(cat => cat.trim()) : [],
+      photos: (profile as any).photos ? (profile as any).photos.split(',').map((photo: string) => photo.trim()).filter((photo: string) => photo && photo.length > 0 && photo !== 'null' && photo !== 'undefined' && (photo.startsWith('http') || photo.startsWith('/') || (photo.startsWith('data:') && photo.length > 20))) : [],
+      whatsapp: profile.whatsapp,
+      messenger: profile.messenger,
+      isVerified: profile.isVerified,
+      createdAt: profile.createdAt
+    })
   } catch (error) {
     console.error('Error fetching provider profile:', error)
     return NextResponse.json(
@@ -52,34 +65,45 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log('Received body:', JSON.stringify(body, null, 2))
+    
     const validatedData = providerProfileSchema.parse(body)
+    console.log('Validated data:', JSON.stringify(validatedData, null, 2))
 
     // Upsert the provider profile
+    const updateData = {
+      name: validatedData.name,
+      city: validatedData.city,
+      lat: validatedData.latitude,
+      lng: validatedData.longitude,
+      categories: validatedData.categories.join(','),
+      bio: validatedData.bio,
+      photos: validatedData.photos?.length ? validatedData.photos.join(',') : null,
+      avatarUrl: validatedData.photos?.[0] || '',
+      whatsapp: validatedData.whatsapp || null,
+      messenger: validatedData.messenger || null,
+    };
+
+    const createData = {
+      userId: session.user.id,
+      name: validatedData.name,
+      city: validatedData.city,
+      lat: validatedData.latitude,
+      lng: validatedData.longitude,
+      categories: validatedData.categories.join(','),
+      bio: validatedData.bio,
+      photos: validatedData.photos?.length ? validatedData.photos.join(',') : null,
+      avatarUrl: validatedData.photos?.[0] || '',
+      whatsapp: validatedData.whatsapp || null,
+      messenger: validatedData.messenger || null,
+    };
+
     const profile = await prisma.providerProfile.upsert({
       where: {
         userId: session.user.id
       },
-      update: {
-        bio: validatedData.bio,
-        city: validatedData.city,
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
-        categories: validatedData.categories,
-        photos: validatedData.photos,
-        whatsapp: validatedData.whatsapp,
-        messenger: validatedData.messenger,
-      },
-      create: {
-        userId: session.user.id,
-        bio: validatedData.bio,
-        city: validatedData.city,
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
-        categories: validatedData.categories,
-        photos: validatedData.photos,
-        whatsapp: validatedData.whatsapp,
-        messenger: validatedData.messenger,
-      }
+      update: updateData,
+      create: createData,
     })
 
     return NextResponse.json(profile)

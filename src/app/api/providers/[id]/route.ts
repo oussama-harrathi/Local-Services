@@ -67,12 +67,13 @@ export async function GET(
       id: providerProfile.id,
       name: providerProfile.user.name || 'Anonymous',
       email: providerProfile.user.email,
-      avatarUrl: providerProfile.user.image || '/default-avatar.png',
+      avatarUrl: providerProfile.avatarUrl || providerProfile.user.image || '/default-avatar.png',
       bio: providerProfile.bio,
       city: providerProfile.city,
-      latitude: providerProfile.latitude,
-      longitude: providerProfile.longitude,
+      latitude: providerProfile.lat,
+      longitude: providerProfile.lng,
       categories: providerProfile.categories ? providerProfile.categories.split(',').map((cat: string) => cat.trim()) : [],
+      photos: (providerProfile as any).photos ? (providerProfile as any).photos.split(',').map((photo: string) => photo.trim()).filter((photo: string) => photo && photo.length > 0 && photo !== 'null' && photo !== 'undefined' && (photo.startsWith('http') || photo.startsWith('/') || (photo.startsWith('data:') && photo.length > 20))) : [],
       whatsapp: providerProfile.whatsapp,
       messenger: providerProfile.messenger,
       isVerified: providerProfile.isVerified,
@@ -84,7 +85,7 @@ export async function GET(
       reviews: visibleReviews.map((review: { 
         id: string;
         rating: number;
-        comment: string;
+        text: string;
         createdAt: Date;
         user: {
           name: string | null;
@@ -93,7 +94,7 @@ export async function GET(
       }) => ({
         id: review.id,
         rating: review.rating,
-        comment: review.comment,
+        comment: review.text,
         createdAt: review.createdAt,
         user: {
           name: review.user.name || 'Anonymous',

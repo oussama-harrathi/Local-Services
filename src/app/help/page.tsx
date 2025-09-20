@@ -119,7 +119,7 @@ export default function HelpPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <LoadingLink href="/contact" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+          <Link href="/contact" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
             <MessageCircle className="w-8 h-8 text-blue-600 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {t('help.contactSupport')}
@@ -127,9 +127,9 @@ export default function HelpPage() {
             <p className="text-gray-600 text-sm">
               {t('help.contactSupportDesc')}
             </p>
-          </LoadingLink>
+          </Link>
           
-          <LoadingLink href="/signup" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+          <Link href="/signup" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
             <Users className="w-8 h-8 text-green-600 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {t('help.becomeProvider')}
@@ -137,7 +137,7 @@ export default function HelpPage() {
             <p className="text-gray-600 text-sm">
               {t('help.becomeProviderDesc')}
             </p>
-          </LoadingLink>
+          </Link>
           
           <div className="bg-white rounded-lg shadow-sm p-6">
             <Shield className="w-8 h-8 text-purple-600 mb-4" />

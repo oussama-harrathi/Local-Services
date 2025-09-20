@@ -32,6 +32,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 /* Smooth scrolling for anchor links */
@@ -193,4 +194,27 @@ html {
 
 [dir="rtl"] button {
   direction: rtl;
+}
+
+/* Fix form input text visibility */
+input, textarea, select {
+  color: #000000 !important; /* Black text */
+  background-color: #ffffff !important; /* White background */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6B7280 !important; /* Gray-500 for placeholder text */
+}
+
+/* Dark mode form inputs */
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    color: #000000 !important; /* Black text in dark mode too */
+    background-color: #ffffff !important; /* White background in dark mode */
+    border-color: #D1D5DB !important; /* Gray-300 border for better contrast */
+  }
+  
+  input::placeholder, textarea::placeholder {
+    color: #6B7280 !important; /* Gray-500 for dark mode placeholder */
+  }
 }

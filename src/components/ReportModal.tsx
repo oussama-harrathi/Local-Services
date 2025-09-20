@@ -60,7 +60,6 @@ export function ReportModal({ isOpen, onClose, targetType, targetId, targetName,
       queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
       toast.success('Report submitted successfully. We will review it shortly.');
       handleClose();
-      onSuccess?.();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to submit report');

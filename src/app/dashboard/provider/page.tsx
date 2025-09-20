@@ -7,9 +7,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import MapPicker from '@/components/MapPicker'
+import PhotoUploadWithDelete from '@/components/PhotoUploadWithDelete'
 
 interface ProviderProfile {
   id?: string
+  name: string
   bio: string
   city: string
   latitude: number
@@ -39,6 +42,7 @@ export default function ProviderDashboard() {
   const queryClient = useQueryClient()
   
   const [formData, setFormData] = useState<ProviderProfile>({
+    name: '',
     bio: '',
     city: '',
     latitude: 0,
@@ -74,10 +78,11 @@ export default function ProviderDashboard() {
     if (profile) {
       setFormData({
         id: profile.id,
+        name: profile.name || '',
         bio: profile.bio || '',
         city: profile.city || '',
-        latitude: profile.latitude || 0,
-        longitude: profile.longitude || 0,
+        latitude: profile.lat || 0,
+        longitude: profile.lng || 0,
         categories: profile.categories || [],
         photos: profile.photos || [],
         whatsapp: profile.whatsapp || '',
@@ -167,6 +172,22 @@ export default function ProviderDashboard() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Name Section */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+
             {/* Bio Section */}
             <div>
               <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
@@ -202,22 +223,17 @@ export default function ProviderDashboard() {
               </div>
             </div>
 
-            {/* Location Picker Placeholder */}
+            {/* Location Picker */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Location
               </label>
-              <div className="mt-1 p-4 border-2 border-dashed border-gray-300 rounded-md text-center">
-                <MapPin className="mx-auto h-8 w-8 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">
-                  Interactive map picker will be implemented here
-                </p>
-                {formData.latitude !== 0 && formData.longitude !== 0 && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    Current: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
-                  </p>
-                )}
-              </div>
+              <MapPicker
+                onLocationSelect={handleLocationSelect}
+                initialLat={formData.latitude}
+                initialLng={formData.longitude}
+                initialCity={formData.city}
+              />
             </div>
 
             {/* Categories Section */}
@@ -242,20 +258,15 @@ export default function ProviderDashboard() {
 
             {/* Photos Section */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Photos
               </label>
-              <div className="mt-1 p-4 border-2 border-dashed border-gray-300 rounded-md text-center">
-                <Camera className="mx-auto h-8 w-8 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">
-                  Photo upload with presigned URLs will be implemented here
-                </p>
-                {formData.photos.length > 0 && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    {formData.photos.length} photo(s) uploaded
-                  </p>
-                )}
-              </div>
+              <PhotoUploadWithDelete
+                photos={formData.photos}
+                onPhotosChange={(photos) => setFormData(prev => ({ ...prev, photos }))}
+                maxPhotos={6}
+                showDeleteButton={true}
+              />
             </div>
 
             {/* Contact Information */}

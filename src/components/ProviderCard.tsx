@@ -57,13 +57,64 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
       <div className="p-6">
         <div className="flex flex-col items-center text-center space-y-4">
           <div className="relative">
-            <Image
-              src={provider.avatarUrl}
-              alt={`${provider.name}'s profile`}
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-full object-cover"
-            />
+            {provider.avatarUrl && provider.avatarUrl.trim() !== '' && (provider.avatarUrl.startsWith('data:image/') || provider.avatarUrl.startsWith('http') || provider.avatarUrl.startsWith('/')) ? (
+              provider.avatarUrl.startsWith('data:image/') && provider.avatarUrl.length > 50 ? (
+                <img
+                  src={provider.avatarUrl}
+                  alt={`${provider.name}'s profile`}
+                  className="w-16 h-16 rounded-full object-cover"
+                  onError={(e) => {
+                    // Hide the broken image and show placeholder
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span class="text-gray-500 text-xl font-semibold">
+                            ${provider.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      `;
+                    }
+                  }}
+                />
+              ) : (provider.avatarUrl.startsWith('http') || provider.avatarUrl.startsWith('/')) ? (
+                <Image
+                  src={provider.avatarUrl}
+                  alt={`${provider.name}'s profile`}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full object-cover"
+                  onError={(e) => {
+                    // Hide the broken image and show placeholder
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span class="text-gray-500 text-xl font-semibold">
+                            ${provider.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      `;
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-xl font-semibold">
+                    {provider.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500 text-xl font-semibold">
+                  {provider.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           

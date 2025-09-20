@@ -85,6 +85,7 @@ model ProviderProfile {
   categories String   // Comma-separated categories for SQLite compatibility
   bio        String
   avatarUrl  String
+  photos     String?  // Comma-separated photo URLs for SQLite compatibility
   whatsapp   String?
   messenger  String?
   isVerified Boolean  @default(false)

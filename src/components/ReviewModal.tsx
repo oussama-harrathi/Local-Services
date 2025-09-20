@@ -41,7 +41,6 @@ export function ReviewModal({ isOpen, onClose, providerId, providerName, onSucce
       queryClient.invalidateQueries({ queryKey: ['provider', providerId] });
       toast.success('Review submitted successfully!');
       handleClose();
-      onSuccess?.();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to submit review');
