@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import { phoneVerificationLimiter, phoneVerificationCodeLimiter } from './rate-limit';
+const twilio = require('twilio');
 
 export interface PhoneVerificationResult {
   success: boolean;
@@ -9,6 +10,17 @@ export interface PhoneVerificationResult {
 }
 
 export class PhoneVerificationService {
+  private twilioClient: any | null = null;
+
+  constructor() {
+    // Initialize Twilio client if credentials are available
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+      this.twilioClient = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN
+      );
+    }
+  }
   private generateVerificationCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
@@ -92,8 +104,13 @@ export class PhoneVerificationService {
       // For development, we'll log the code
       console.log(`📱 Verification code for ${phone}: ${code}`);
       
-      // TODO: Integrate with SMS service (Twilio, AWS SNS, etc.)
-      // await this.sendSMS(phone, `Your LocalSpark verification code is: ${code}`);
+      // Send SMS using Twilio
+      try {
+        await this.sendSMS(phone, `Your LocalSpark verification code is: ${code}. This code expires in 10 minutes.`);
+      } catch (smsError) {
+        console.error('SMS sending failed:', smsError);
+        // Continue with the process even if SMS fails, so user can still see the code in logs during development
+      }
 
       return {
         success: true,
@@ -202,22 +219,28 @@ export class PhoneVerificationService {
     }
   }
 
-  // TODO: Implement SMS sending with your preferred provider
+  // Implement SMS sending with Twilio
   private async sendSMS(phone: string, message: string): Promise<void> {
-    // Example integration with Twilio:
-    /*
-    const twilio = require('twilio');
-    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    
-    await client.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone,
-    });
-    */
-    
-    // For now, just log the message
-    console.log(`SMS to ${phone}: ${message}`);
+    if (!this.twilioClient) {
+      throw new Error('Twilio client not initialized. Please check your environment variables.');
+    }
+
+    if (!process.env.TWILIO_PHONE_NUMBER) {
+      throw new Error('TWILIO_PHONE_NUMBER environment variable is not set.');
+    }
+
+    try {
+      const result = await this.twilioClient.messages.create({
+        body: message,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: phone,
+      });
+
+      console.log(`✅ SMS sent successfully to ${phone}. Message SID: ${result.sid}`);
+    } catch (error) {
+      console.error(`❌ Failed to send SMS to ${phone}:`, error);
+      throw error;
+    }
   }
 }
 
