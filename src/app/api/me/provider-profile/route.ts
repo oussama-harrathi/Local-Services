@@ -40,7 +40,7 @@ export async function GET() {
       city: profile.city,
       lat: profile.lat,
       lng: profile.lng,
-      categories: profile.categories ? profile.categories.split(',').map(cat => cat.trim()) : [],
+      categories: profile.categories ? profile.categories.split(',').map((cat: string) => cat.trim()) : [],
       photos: (profile as any).photos ? (profile as any).photos.split(',').map((photo: string) => photo.trim()).filter((photo: string) => photo && photo.length > 0 && photo !== 'null' && photo !== 'undefined' && (photo.startsWith('http') || photo.startsWith('/') || (photo.startsWith('data:') && photo.length > 20))) : [],
       whatsapp: profile.whatsapp,
       messenger: profile.messenger,

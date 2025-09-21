@@ -6,7 +6,8 @@ import SessionProvider from "@/components/SessionProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Toaster } from "react-hot-toast";
 import RootLayoutClient from "./RootLayoutClient";
-import { RouteLoader, RouteLoadingProvider } from "@/components/PageLoader";
+import { RouteLoadingProvider, RouteLoader } from '@/components/PageLoader';
+import ReCaptchaProvider from '@/components/ReCaptchaProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,10 +48,12 @@ export default function RootLayout({
           <RootLayoutClient>
             <SessionProvider>
               <QueryProvider>
-                <RouteLoadingProvider>
-                  {children}
-                  <RouteLoader />
-                </RouteLoadingProvider>
+                <ReCaptchaProvider>
+                  <RouteLoadingProvider>
+                    {children}
+                    <RouteLoader />
+                  </RouteLoadingProvider>
+                </ReCaptchaProvider>
                 <Toaster position="top-right" />
               </QueryProvider>
             </SessionProvider>

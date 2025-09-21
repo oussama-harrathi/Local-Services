@@ -17,6 +17,8 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String    @default("customer")
+  phone         String?   @unique
+  phoneVerified DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -27,6 +29,8 @@ model User {
   reviews         Review[]
   favorites       Favorite[]
   reports         Report[]
+  phoneVerifications PhoneVerification[]
+  rateLimitEntries   RateLimitEntry[]
   
   @@map("users")
 }
@@ -147,4 +151,39 @@ model Report {
   review   Review?          @relation("ReviewReports", fields: [targetId], references: [id], onDelete: Cascade)
   
   @@map("reports")
+}
+
+model PhoneVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  phone     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("phone_verifications")
+}
+
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  userId    String?
+  phone     String?
+  ipAddress String?
+  action    String   // "review_submission", "phone_verification", etc.
+  count     Int      @default(1)
+  windowStart DateTime
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, action, windowStart])
+  @@index([phone, action, windowStart])
+  @@index([ipAddress, action, windowStart])
+  @@map("rate_limit_entries")
 }

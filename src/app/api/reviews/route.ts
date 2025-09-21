@@ -3,12 +3,34 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { reviewSubmissionLimiter, suspiciousActivityLimiter } from '@/lib/rate-limit';
+import { phoneVerificationService } from '@/lib/phone-verification';
 
 const createReviewSchema = z.object({
   providerId: z.string().min(1, 'Provider ID is required'),
   rating: z.number().min(1).max(5, 'Rating must be between 1 and 5'),
   text: z.string().min(10, 'Review text must be at least 10 characters').max(1000, 'Review text must be less than 1000 characters'),
+  captchaToken: z.string().min(1, 'CAPTCHA verification is required'),
 });
+
+// Function to verify reCAPTCHA token
+async function verifyCaptcha(token: string): Promise<boolean> {
+  try {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
+    });
+
+    const data = await response.json();
+    return data.success && data.score >= 0.5; // reCAPTCHA v3 score threshold
+  } catch (error) {
+    console.error('CAPTCHA verification error:', error);
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,8 +43,87 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get client IP address
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ipAddress = forwarded ? forwarded.split(',')[0] : 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+
     const body = await request.json();
     const validatedData = createReviewSchema.parse(body);
+
+    // Get user details for enhanced rate limiting
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { 
+        id: true, 
+        phone: true, 
+        phoneVerified: true,
+        createdAt: true,
+        reviews: {
+          select: { id: true },
+          take: 1
+        }
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Enhanced rate limiting checks
+    const isNewUser = user.createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days
+    const hasNoReviews = user.reviews.length === 0;
+    const isPhoneVerified = !!user.phoneVerified;
+
+    // Apply stricter limits for suspicious activity
+    if ((isNewUser && hasNoReviews) || !isPhoneVerified) {
+      const suspiciousLimitResult = await suspiciousActivityLimiter.checkLimit(
+        user.id,
+        user.phone || undefined,
+        ipAddress
+      );
+
+      if (!suspiciousLimitResult.success) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded. New users and unverified accounts have stricter limits. Please verify your phone number or try again later.',
+            resetTime: suspiciousLimitResult.resetTime 
+          },
+          { status: 429 }
+        );
+      }
+    }
+
+    // Standard rate limiting
+    const rateLimitResult = await reviewSubmissionLimiter.checkLimit(
+      user.id,
+      user.phone || undefined,
+      ipAddress
+    );
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: `Review submission limit exceeded. You can submit ${rateLimitResult.limit} reviews per day. Try again after ${rateLimitResult.resetTime.toLocaleString()}`,
+          resetTime: rateLimitResult.resetTime,
+          remaining: rateLimitResult.remaining
+        },
+        { status: 429 }
+      );
+    }
+    
+    // Verify CAPTCHA token
+    const isCaptchaValid = await verifyCaptcha(validatedData.captchaToken);
+    if (!isCaptchaValid) {
+      return NextResponse.json(
+        { error: 'CAPTCHA verification failed. Please try again.' },
+        { status: 400 }
+      );
+    }
     
     // Check if provider exists
     const provider = await prisma.providerProfile.findUnique({
@@ -44,23 +145,28 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Check for existing review within 14 days
-    const fourteenDaysAgo = new Date();
-    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    // Check for existing review within 14 days (enhanced with phone verification)
+    const reviewCooldownDays = isPhoneVerified ? 14 : 30; // Longer cooldown for unverified users
+    const cooldownDate = new Date();
+    cooldownDate.setDate(cooldownDate.getDate() - reviewCooldownDays);
     
     const existingReview = await prisma.review.findFirst({
       where: {
         userId: session.user.id,
         providerId: validatedData.providerId,
         createdAt: {
-          gte: fourteenDaysAgo,
+          gte: cooldownDate,
         },
       },
     });
     
     if (existingReview) {
+      const waitDays = isPhoneVerified ? 14 : 30;
       return NextResponse.json(
-        { error: 'You can only review a provider once every 14 days' },
+        { 
+          error: `You can only review a provider once every ${waitDays} days. ${!isPhoneVerified ? 'Verify your phone number to reduce this to 14 days.' : ''}`,
+          phoneVerified: isPhoneVerified
+        },
         { status: 429 }
       );
     }
