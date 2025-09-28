@@ -6,7 +6,11 @@ export const ar = {
     signIn: "تسجيل الدخول",
     signOut: "تسجيل الخروج",
     dashboard: "لوحة التحكم",
-    admin: "المدير"
+    admin: "المدير",
+    howItWorks: "كيف يعمل",
+    categories: "الفئات",
+    cities: "المدن",
+    providerDashboard: "لوحة تحكم مقدم الخدمة"
   },
 
   // Search
@@ -43,6 +47,31 @@ export const ar = {
     verified: "موثق"
   },
 
+  // Provider Details
+  providerDetails: {
+    back: "رجوع",
+    verifiedProvider: "مقدم خدمة موثق",
+    joined: "انضم",
+    about: "حول",
+    noBioAvailable: "لا توجد سيرة ذاتية متاحة.",
+    workGallery: "معرض الأعمال",
+    invalidImage: "صورة غير صالحة",
+    noImage: "لا توجد صورة",
+    contact: "اتصال",
+    whatsapp: "واتساب",
+    messenger: "ماسنجر",
+    noContactMethods: "لا توجد طرق اتصال متاحة",
+    noContactInfo: "لم يضف مقدم الخدمة معلومات الاتصال بعد",
+    reportProvider: "الإبلاغ عن مقدم الخدمة",
+    writeReview: "كتابة مراجعة",
+    noReviewsYet: "لا توجد مراجعات بعد.",
+    beFirstReview: "كن أول من يترك مراجعة!",
+    writeFirstReview: "كتابة أول مراجعة",
+    providerNotFound: "مقدم الخدمة غير موجود",
+    providerNotFoundDesc: "مقدم الخدمة الذي تبحث عنه غير موجود أو تم حذفه.",
+    loadingProviderDetails: "جاري تحميل تفاصيل مقدم الخدمة..."
+  },
+
   // Reviews
   reviews: {
     writeReview: "اكتب مراجعة",
@@ -62,7 +91,14 @@ export const ar = {
     profileStatus: "حالة الملف الشخصي",
     pending: "قيد الانتظار",
     approved: "موافق عليه",
-    rejected: "مرفوض"
+    rejected: "مرفوض",
+    back: "رجوع",
+    providerDashboard: "لوحة تحكم مقدم الخدمة",
+    createAndManage: "أنشئ وأدر ملف مقدم الخدمة الخاص بك",
+    serviceCategories: "فئات الخدمة",
+    photos: "الصور",
+    saving: "جاري الحفظ...",
+    saveProfile: "حفظ الملف الشخصي"
   },
 
   // Profile Form

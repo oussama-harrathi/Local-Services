@@ -6,7 +6,11 @@ export const en = {
     signIn: "Sign in",
     signOut: "Sign out",
     dashboard: "Dashboard",
-    admin: "Admin"
+    admin: "Admin",
+    howItWorks: "How it works",
+    categories: "Categories",
+    cities: "Cities",
+    providerDashboard: "Provider Dashboard"
   },
 
   // Search
@@ -43,6 +47,31 @@ export const en = {
     verified: "Verified"
   },
 
+  // Provider Details
+  providerDetails: {
+    back: "Back",
+    verifiedProvider: "Verified Provider",
+    joined: "Joined",
+    about: "About",
+    noBioAvailable: "No bio available.",
+    workGallery: "Work Gallery",
+    invalidImage: "Invalid image",
+    noImage: "No image",
+    contact: "Contact",
+    whatsapp: "WhatsApp",
+    messenger: "Messenger",
+    noContactMethods: "No contact methods available",
+    noContactInfo: "Provider hasn't added contact info yet",
+    reportProvider: "Report Provider",
+    writeReview: "Write Review",
+    noReviewsYet: "No reviews yet.",
+    beFirstReview: "Be the first to leave a review!",
+    writeFirstReview: "Write First Review",
+    providerNotFound: "Provider Not Found",
+    providerNotFoundDesc: "The provider you're looking for doesn't exist or has been removed.",
+    loadingProviderDetails: "Loading provider details..."
+  },
+
   // Reviews
   reviews: {
     writeReview: "Write a Review",
@@ -62,7 +91,14 @@ export const en = {
     profileStatus: "Profile Status",
     pending: "Pending",
     approved: "Approved",
-    rejected: "Rejected"
+    rejected: "Rejected",
+    back: "Back",
+    providerDashboard: "Provider Dashboard",
+    createAndManage: "Create and manage your service provider profile",
+    serviceCategories: "Service Categories",
+    photos: "Photos",
+    saving: "Saving...",
+    saveProfile: "Save Profile"
   },
 
   // Profile Form

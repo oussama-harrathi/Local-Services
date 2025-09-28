@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { useLanguage } from '@/contexts/LanguageContext'
 import MapPicker from '@/components/MapPicker'
 import PhotoUploadWithDelete from '@/components/PhotoUploadWithDelete'
 
@@ -40,6 +41,7 @@ export default function ProviderDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { t } = useLanguage()
   
   const [formData, setFormData] = useState<ProviderProfile>({
     name: '',
@@ -157,17 +159,17 @@ export default function ProviderDashboard() {
           className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2 rtl-flip" />
-          Back
+          {t('dashboard.back')}
         </button>
         
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <User className="h-6 w-6" />
-              Provider Dashboard
+              {t('dashboard.providerDashboard')}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              Create and manage your service provider profile
+              {t('dashboard.createAndManage')}
             </p>
           </div>
 
@@ -175,7 +177,7 @@ export default function ProviderDashboard() {
             {/* Name Section */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Name
+                {t('profileForm.name')}
               </label>
               <input
                 type="text"
@@ -191,7 +193,7 @@ export default function ProviderDashboard() {
             {/* Bio Section */}
             <div>
               <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                Bio
+                {t('profileForm.bio')}
               </label>
               <textarea
                 id="bio"
@@ -207,7 +209,7 @@ export default function ProviderDashboard() {
             {/* City Section */}
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                City
+                {t('profileForm.city')}
               </label>
               <div className="mt-1 relative">
                 <input
@@ -226,7 +228,7 @@ export default function ProviderDashboard() {
             {/* Location Picker */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Location
+                {t('profileForm.location')}
               </label>
               <MapPicker
                 onLocationSelect={handleLocationSelect}
@@ -239,7 +241,7 @@ export default function ProviderDashboard() {
             {/* Categories Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Service Categories
+                {t('dashboard.serviceCategories')}
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {CATEGORIES.map((category) => (
@@ -259,7 +261,7 @@ export default function ProviderDashboard() {
             {/* Photos Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Photos
+                {t('dashboard.photos')}
               </label>
               <PhotoUploadWithDelete
                 photos={formData.photos}
@@ -273,7 +275,7 @@ export default function ProviderDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700">
-                  WhatsApp
+                  {t('profileForm.whatsapp')}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -290,7 +292,7 @@ export default function ProviderDashboard() {
 
               <div>
                 <label htmlFor="messenger" className="block text-sm font-medium text-gray-700">
-                  Messenger
+                  {t('profileForm.messenger')}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -313,7 +315,7 @@ export default function ProviderDashboard() {
                 isLoading={saveProfileMutation.isPending}
                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saveProfileMutation.isPending ? 'Saving...' : 'Save Profile'}
+                {saveProfileMutation.isPending ? t('dashboard.saving') : t('dashboard.saveProfile')}
               </LoadingButton>
             </div>
           </form>

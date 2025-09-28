@@ -6,7 +6,11 @@ export const hu = {
     signIn: "Bejelentkezés",
     signOut: "Kijelentkezés",
     dashboard: "Irányítópult",
-    admin: "Admin"
+    admin: "Admin",
+    howItWorks: "Hogyan működik",
+    categories: "Kategóriák",
+    cities: "Városok",
+    providerDashboard: "Szolgáltató irányítópult"
   },
 
   // Search
@@ -43,6 +47,31 @@ export const hu = {
     verified: "Ellenőrzött"
   },
 
+  // Provider Details
+  providerDetails: {
+    back: "Vissza",
+    verifiedProvider: "Ellenőrzött szolgáltató",
+    joined: "Csatlakozott",
+    about: "Rólam",
+    noBioAvailable: "Nincs elérhető bemutatkozás.",
+    workGallery: "Munka galéria",
+    invalidImage: "Érvénytelen kép",
+    noImage: "Nincs kép",
+    contact: "Kapcsolat",
+    whatsapp: "WhatsApp",
+    messenger: "Messenger",
+    noContactMethods: "Nincsenek elérhető kapcsolattartási módok",
+    noContactInfo: "A szolgáltató még nem adott meg kapcsolattartási információkat",
+    reportProvider: "Szolgáltató jelentése",
+    writeReview: "Értékelés írása",
+    noReviewsYet: "Még nincsenek értékelések.",
+    beFirstReview: "Legyen Ön az első, aki értékelést ír!",
+    writeFirstReview: "Első értékelés írása",
+    providerNotFound: "Szolgáltató nem található",
+    providerNotFoundDesc: "A keresett szolgáltató nem létezik vagy el lett távolítva.",
+    loadingProviderDetails: "Szolgáltató adatainak betöltése..."
+  },
+
   // Reviews
   reviews: {
     writeReview: "Vélemény írása",
@@ -62,7 +91,14 @@ export const hu = {
     profileStatus: "Profil állapota",
     pending: "Függőben",
     approved: "Jóváhagyva",
-    rejected: "Elutasítva"
+    rejected: "Elutasítva",
+    back: "Vissza",
+    providerDashboard: "Szolgáltató irányítópult",
+    createAndManage: "Hozza létre és kezelje szolgáltatói profilját",
+    serviceCategories: "Szolgáltatási kategóriák",
+    photos: "Fényképek",
+    saving: "Mentés...",
+    saveProfile: "Profil mentése"
   },
 
   // Profile Form

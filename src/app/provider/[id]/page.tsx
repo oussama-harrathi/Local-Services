@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ReviewModal } from '@/components/ReviewModal';
 import { ReportModal } from '@/components/ReportModal';
 import { LoadingSpinner, LoadingPulse } from '@/components/ui/LoadingSpinner';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Image from 'next/image';
 
 interface Review {
@@ -51,6 +52,7 @@ export default function ProviderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -171,7 +173,7 @@ export default function ProviderDetailPage() {
             className="mb-6 text-white hover:bg-white/10 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2 rtl-flip" />
-            Back
+            {t('providerDetails.back')}
           </Button>
           <div className="flex items-start gap-8">
             <div className="relative">
@@ -193,7 +195,7 @@ export default function ProviderDetailPage() {
                 {provider.isVerified && (
                   <Badge className="bg-green-500/20 text-green-100 border-green-400/30 px-3 py-1">
                     <Shield className="w-3 h-3 mr-1" />
-                    Verified Provider
+                    {t('providerDetails.verifiedProvider')}
                   </Badge>
                 )}
               </div>
@@ -204,7 +206,7 @@ export default function ProviderDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  <span>Joined {new Date(provider.createdAt).toLocaleDateString()}</span>
+                  <span>{t('providerDetails.joined')} {new Date(provider.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-6">
@@ -236,12 +238,12 @@ export default function ProviderDetailPage() {
               <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
                 <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
                   <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
-                  About
+                  {t('providerDetails.about')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <p className="text-gray-700 leading-relaxed text-lg">
-                  {provider.bio || 'No bio available.'}
+                  {provider.bio || t('providerDetails.noBioAvailable')}
                 </p>
               </CardContent>
             </Card>
@@ -252,7 +254,7 @@ export default function ProviderDetailPage() {
                 <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
                   <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
                     <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
-                    Work Gallery ({provider.photos.length})
+                    {t('providerDetails.workGallery')} ({provider.photos.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -316,7 +318,7 @@ export default function ProviderDetailPage() {
                                   <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
                                   </svg>
-                                  <p className="text-xs text-gray-500">Invalid image</p>
+                                  <p className="text-xs text-gray-500">{t('providerDetails.invalidImage')}</p>
                                 </div>
                               </div>
                             )
@@ -326,7 +328,7 @@ export default function ProviderDetailPage() {
                                 <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
                                 </svg>
-                                <p className="text-xs text-gray-500">No image</p>
+                                <p className="text-xs text-gray-500">{t('providerDetails.noImage')}</p>
                               </div>
                             </div>
                           )}
@@ -347,14 +349,14 @@ export default function ProviderDetailPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
                     <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
-                    Reviews ({provider.review.count})
+                    {t('reviews.reviews')} ({provider.review.count})
                   </CardTitle>
                   <Button
                     onClick={() => setIsReviewModalOpen(true)}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Write Review
+                    {t('providerDetails.writeReview')}
                   </Button>
                 </div>
               </CardHeader>
@@ -391,14 +393,14 @@ export default function ProviderDetailPage() {
                     <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Star className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p className="text-gray-500 text-lg">No reviews yet.</p>
-                    <p className="text-gray-400 text-sm">Be the first to leave a review!</p>
+                    <p className="text-gray-500 text-lg">{t('providerDetails.noReviewsYet')}</p>
+                    <p className="text-gray-400 text-sm">{t('providerDetails.beFirstReview')}</p>
                     <Button
                       onClick={() => setIsReviewModalOpen(true)}
                       className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      Write First Review
+                      {t('providerDetails.writeFirstReview')}
                     </Button>
                   </div>
                 )}
@@ -412,7 +414,7 @@ export default function ProviderDetailPage() {
               <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 rounded-t-lg">
                 <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
                   <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
-                  Contact
+                  {t('providerDetails.contact')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -422,7 +424,7 @@ export default function ProviderDetailPage() {
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 py-3 text-lg"
                   >
                     <Phone className="w-5 h-5 mr-3" />
-                    WhatsApp
+                    {t('providerDetails.whatsapp')}
                   </Button>
                 )}
                 {provider.messenger && (
@@ -431,7 +433,7 @@ export default function ProviderDetailPage() {
                     className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 py-3 text-lg"
                   >
                     <MessageCircle className="w-5 h-5 mr-3" />
-                    Messenger
+                    {t('providerDetails.messenger')}
                   </Button>
                 )}
                 {!provider.whatsapp && !provider.messenger && (
@@ -439,8 +441,8 @@ export default function ProviderDetailPage() {
                     <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Phone className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p className="text-gray-500 text-lg">No contact methods available</p>
-                    <p className="text-gray-400 text-sm">Provider hasn't added contact info yet</p>
+                    <p className="text-gray-500 text-lg">{t('providerDetails.noContactMethods')}</p>
+                    <p className="text-gray-400 text-sm">{t('providerDetails.noContactInfo')}</p>
                   </div>
                 )}
                 <Separator className="my-4" />
@@ -450,7 +452,7 @@ export default function ProviderDetailPage() {
                   className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
                 >
                   <Flag className="w-4 h-4 mr-2" />
-                  Report Provider
+                  {t('providerDetails.reportProvider')}
                 </Button>
               </CardContent>
             </Card>

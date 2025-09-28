@@ -26,7 +26,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const categories = [
     { value: '', label: t('search.allCategories') },
     { value: 'food_home', label: t('categories.food_home') },
-    { value: 'mobile_barber', label: t('categories.mobile_barber') },
+    { value: 'haircut_mobile', label: t('categories.haircut_mobile') },
     { value: 'cleaning', label: t('categories.cleaning') },
     { value: 'tutoring', label: t('categories.tutoring') },
     { value: 'repairs', label: t('categories.repairs') },

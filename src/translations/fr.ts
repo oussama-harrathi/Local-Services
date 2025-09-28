@@ -6,7 +6,11 @@ export const fr = {
     signIn: "Se connecter",
     signOut: "Se déconnecter",
     dashboard: "Tableau de bord",
-    admin: "Admin"
+    admin: "Admin",
+    howItWorks: "Comment ça marche",
+    categories: "Catégories",
+    cities: "Villes",
+    providerDashboard: "Tableau de bord prestataire"
   },
 
   // Search
@@ -43,6 +47,31 @@ export const fr = {
     verified: "Vérifié"
   },
 
+  // Provider Details
+  providerDetails: {
+    back: "Retour",
+    verifiedProvider: "Prestataire vérifié",
+    joined: "Inscrit",
+    about: "À propos",
+    noBioAvailable: "Aucune biographie disponible.",
+    workGallery: "Galerie de travaux",
+    invalidImage: "Image invalide",
+    noImage: "Aucune image",
+    contact: "Contact",
+    whatsapp: "WhatsApp",
+    messenger: "Messenger",
+    noContactMethods: "Aucun moyen de contact disponible",
+    noContactInfo: "Le prestataire n'a pas encore ajouté d'informations de contact",
+    reportProvider: "Signaler le prestataire",
+    writeReview: "Écrire un avis",
+    noReviewsYet: "Aucun avis pour le moment.",
+    beFirstReview: "Soyez le premier à laisser un avis !",
+    writeFirstReview: "Écrire le premier avis",
+    providerNotFound: "Prestataire introuvable",
+    providerNotFoundDesc: "Le prestataire que vous recherchez n'existe pas ou a été supprimé.",
+    loadingProviderDetails: "Chargement des détails du prestataire..."
+  },
+
   // Reviews
   reviews: {
     writeReview: "Écrire un avis",
@@ -62,7 +91,14 @@ export const fr = {
     profileStatus: "Statut du profil",
     pending: "En attente",
     approved: "Approuvé",
-    rejected: "Rejeté"
+    rejected: "Rejeté",
+    back: "Retour",
+    providerDashboard: "Tableau de bord prestataire",
+    createAndManage: "Créez et gérez votre profil de prestataire de services",
+    serviceCategories: "Catégories de services",
+    photos: "Photos",
+    saving: "Enregistrement...",
+    saveProfile: "Enregistrer le profil"
   },
 
   // Profile Form

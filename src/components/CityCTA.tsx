@@ -2,38 +2,52 @@
 
 import { MapPin, ArrowRight, Users } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useQuery } from '@tanstack/react-query';
 
 interface CityCTAProps {
   onCitySelect: (city: string) => void;
 }
 
-const getCities = (t: any) => [
+const getCities = (t: any, providerCounts: Record<string, number>) => [
   {
     name: 'Tunis',
     country: t('cities.tunisia'),
     description: t('cities.tunisDescription'),
-    providerCount: '50+',
+    providerCount: providerCounts['Tunis'] || 0,
     gradient: 'from-blue-500 to-blue-600'
   },
   {
     name: 'Sousse',
     country: t('cities.tunisia'),
     description: t('cities.sousseDescription'),
-    providerCount: '30+',
+    providerCount: providerCounts['Sousse'] || 0,
     gradient: 'from-teal-500 to-teal-600'
   },
   {
     name: 'Budapest',
     country: t('cities.hungary'),
     description: t('cities.budapestDescription'),
-    providerCount: '40+',
+    providerCount: providerCounts['Budapest'] || 0,
     gradient: 'from-purple-500 to-purple-600'
   }
 ];
 
 export default function CityCTA({ onCitySelect }: CityCTAProps) {
   const { t } = useLanguage();
-  const cities = getCities(t);
+  
+  // Fetch provider statistics
+  const { data: providerCounts = {}, isLoading } = useQuery({
+    queryKey: ['provider-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/providers/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch provider statistics');
+      }
+      return response.json() as Promise<Record<string, number>>;
+    },
+  });
+  
+  const cities = getCities(t, providerCounts);
 
   return (
     <section id="cities" className="py-16 bg-white">
@@ -60,7 +74,9 @@ export default function CityCTA({ onCitySelect }: CityCTAProps) {
                 {/* Provider count badge */}
                 <div className="absolute top-4 right-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1">
                   <Users className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-900">{city.providerCount}</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {isLoading ? '...' : city.providerCount}
+                  </span>
                 </div>
                 
                 {/* City name overlay */}

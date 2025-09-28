@@ -30,19 +30,19 @@ export default function Header() {
               href="#how-it-works" 
               className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
-              How it works
+              {t('header.howItWorks')}
             </a>
             <a 
               href="#categories" 
               className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
-              Categories
+              {t('header.categories')}
             </a>
             <a 
               href="#cities" 
               className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
-              Cities
+              {t('header.cities')}
             </a>
           </nav>
 
@@ -105,7 +105,7 @@ export default function Header() {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      Provider Dashboard
+                      {t('header.providerDashboard')}
                     </LoadingLink>
                     <button
                       onClick={() => {
@@ -115,7 +115,7 @@ export default function Header() {
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Sign out</span>
+                      <span>{t('header.signOut')}</span>
                     </button>
                   </div>
                 )}
@@ -126,13 +126,13 @@ export default function Header() {
                   onClick={() => signIn()}
                   className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
                 >
-                  Sign in
+                  {t('header.signIn')}
                 </button>
                 <Link
                   href="/dashboard/provider"
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                  List your service
+                  {t('header.listService')}
                 </Link>
               </div>
             )}
