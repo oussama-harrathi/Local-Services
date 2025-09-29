@@ -498,6 +498,13 @@ export const en = {
     reviewSubmitted: "Review submitted successfully!",
     reportSubmitted: "Report submitted successfully!",
     errorOccurred: "An error occurred. Please try again."
+  },
+
+  // Schedules
+  schedules: {
+    saved: "Schedules saved successfully!",
+    saveError: "Failed to save schedules. Please try again.",
+    profileRequired: "Please save your provider profile first before setting up schedules."
   }
 };
 

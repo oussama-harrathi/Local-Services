@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,8 @@ import { ReviewModal } from '@/components/ReviewModal';
 import { ReportModal } from '@/components/ReportModal';
 import { LoadingSpinner, LoadingPulse } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import BookingModal from '@/components/BookingModal';
+import OrderModal from '@/components/OrderModal';
 import Image from 'next/image';
 
 interface Review {
@@ -57,6 +59,8 @@ export default function ProviderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProvider = async () => {
@@ -436,6 +440,41 @@ export default function ProviderDetailPage() {
                     {t('providerDetails.messenger')}
                   </Button>
                 )}
+                
+                {/* Booking and Ordering Buttons */}
+                <Separator className="my-4" />
+                <div className="space-y-3">
+                  {/* Show Book Appointment for service-based categories */}
+                  {(provider.categories.includes('cleaning') || 
+                    provider.categories.includes('repairs') || 
+                    provider.categories.includes('tutoring') || 
+                    provider.categories.includes('haircut_mobile') ||
+                    provider.categories.includes('pet_care') ||
+                    provider.categories.includes('gardening') ||
+                    provider.categories.includes('photography') ||
+                    provider.categories.includes('fitness_training') ||
+                    provider.categories.includes('music_lessons')) && (
+                    <Button
+                      onClick={() => setIsBookingModalOpen(true)}
+                      className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 py-3 text-lg"
+                    >
+                      <Calendar className="w-5 h-5 mr-3" />
+                      Book Appointment
+                    </Button>
+                  )}
+                  
+                  {/* Show Order Food only for food-related categories */}
+                  {provider.categories.includes('food_home') && (
+                    <Button
+                      onClick={() => setIsOrderModalOpen(true)}
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 py-3 text-lg"
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-3" />
+                      Order Food
+                    </Button>
+                  )}
+                </div>
+                
                 {!provider.whatsapp && !provider.messenger && (
                   <div className="text-center py-8">
                     <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -481,6 +520,19 @@ export default function ProviderDetailPage() {
             description: 'Thank you for your report. We will review it shortly.',
           });
         }}
+      />
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        providerId={provider.id}
+        providerName={provider.name}
+        categories={provider.categories}
+      />
+      <OrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        providerId={provider.id}
+        providerName={provider.name}
       />
     </div>
   );

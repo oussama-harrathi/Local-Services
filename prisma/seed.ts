@@ -5,14 +5,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting seed...');
 
-  // Clear existing data
-  await prisma.favorite.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.report.deleteMany();
-  await prisma.providerProfile.deleteMany();
-  await prisma.user.deleteMany();
+  // Clear existing data - COMMENTED OUT to preserve existing providers
+  // await prisma.favorite.deleteMany();
+  // await prisma.review.deleteMany();
+  // await prisma.report.deleteMany();
+  // await prisma.providerProfile.deleteMany();
+  // await prisma.user.deleteMany();
 
-  console.log('🗑️  Cleared existing data');
+  console.log('🔄 Preserving existing data - adding new sample providers');
 
   // Create users and provider profiles from hardcoded data
   const providersData = [
@@ -52,6 +52,16 @@ async function main() {
   ];
 
   for (const provider of providersData) {
+    // Check if provider already exists to avoid duplicates
+    const existingProvider = await prisma.providerProfile.findFirst({
+      where: { name: provider.name }
+    });
+
+    if (existingProvider) {
+      console.log(`⏭️  Skipping existing provider: ${provider.name}`);
+      continue;
+    }
+
     // Create a fake user for each provider
     const user = await prisma.user.create({
       data: {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Provider } from '@/lib/types';
+import { Provider, Category } from '@/lib/types';
 import { haversineKm } from '@/lib/geo';
 import { prisma } from '@/lib/db';
 
@@ -61,12 +61,12 @@ export async function GET(request: Request) {
       return {
         id: profile.id,
         name: profile.name,
-        city: profile.city,
+        city: profile.city as "Tunis" | "Sousse" | "Budapest",
         coords: {
           lat: profile.lat,
           lng: profile.lng,
         },
-        categories: profile.categories.split(','), // Convert comma-separated string back to array
+        categories: profile.categories.split(',') as Category[], // Convert comma-separated string back to array
         bio: profile.bio,
         avatarUrl: profile.avatarUrl,
         review: {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Globe, User, LogOut } from 'lucide-react';
+import { ChevronDown, Globe, User, LogOut, Calendar, ShoppingCart } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -107,6 +107,30 @@ export default function Header() {
                     >
                       {t('header.providerDashboard')}
                     </LoadingLink>
+                    
+                    {/* Customer Orders/Appointments Section */}
+                    <div className="border-t border-gray-100 my-1"></div>
+                    <div className="px-4 py-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">My Activity</p>
+                    </div>
+                    <LoadingLink
+                      href="/dashboard/bookings"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      <span>My Appointments</span>
+                    </LoadingLink>
+                    <LoadingLink
+                      href="/dashboard/orders"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>My Orders</span>
+                    </LoadingLink>
+                    
+                    <div className="border-t border-gray-100 my-1"></div>
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);

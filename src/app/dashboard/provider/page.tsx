@@ -10,6 +10,8 @@ import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useLanguage } from '@/contexts/LanguageContext'
 import MapPicker from '@/components/MapPicker'
 import PhotoUploadWithDelete from '@/components/PhotoUploadWithDelete'
+import ScheduleManager from '@/components/ScheduleManager'
+import ProviderOrdersManager from '@/components/ProviderOrdersManager'
 
 interface ProviderProfile {
   id?: string
@@ -25,16 +27,16 @@ interface ProviderProfile {
 }
 
 const CATEGORIES = [
-  'Home Cooking',
-  'Mobile Barber/Hairdresser',
-  'Cleaning Services',
-  'Tutoring',
-  'Home Repairs',
-  'Pet Care',
-  'Gardening',
-  'Photography',
-  'Fitness Training',
-  'Music Lessons'
+  { key: 'food_home', label: 'Home Cooking' },
+  { key: 'haircut_mobile', label: 'Mobile Barber/Hairdresser' },
+  { key: 'cleaning', label: 'Cleaning Services' },
+  { key: 'tutoring', label: 'Tutoring' },
+  { key: 'repairs', label: 'Home Repairs' },
+  { key: 'pet_care', label: 'Pet Care' },
+  { key: 'gardening', label: 'Gardening' },
+  { key: 'photography', label: 'Photography' },
+  { key: 'fitness_training', label: 'Fitness Training' },
+  { key: 'music_lessons', label: 'Music Lessons' }
 ]
 
 export default function ProviderDashboard() {
@@ -120,12 +122,12 @@ export default function ProviderDashboard() {
     saveProfileMutation.mutate(formData)
   }
 
-  const handleCategoryToggle = (category: string) => {
+  const handleCategoryToggle = (categoryKey: string) => {
     setFormData(prev => ({
       ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category]
+      categories: prev.categories.includes(categoryKey)
+        ? prev.categories.filter(c => c !== categoryKey)
+        : [...prev.categories, categoryKey]
     }))
   }
 
@@ -162,7 +164,8 @@ export default function ProviderDashboard() {
           {t('dashboard.back')}
         </button>
         
-        <div className="bg-white shadow rounded-lg">
+        {/* Provider Profile Section */}
+        <div className="bg-white shadow rounded-lg mb-6">
           <div className="px-6 py-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <User className="h-6 w-6" />
@@ -245,14 +248,14 @@ export default function ProviderDashboard() {
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {CATEGORIES.map((category) => (
-                  <label key={category} className="flex items-center">
+                  <label key={category.key} className="flex items-center">
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                      checked={formData.categories.includes(category)}
-                      onChange={() => handleCategoryToggle(category)}
+                      checked={formData.categories.includes(category.key)}
+                      onChange={() => handleCategoryToggle(category.key)}
                     />
-                    <span className="ml-2 text-sm text-gray-700">{category}</span>
+                    <span className="ml-2 text-sm text-gray-700">{category.label}</span>
                   </label>
                 ))}
               </div>
@@ -320,6 +323,26 @@ export default function ProviderDashboard() {
             </div>
           </form>
         </div>
+
+        {/* Schedule Management Section */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Schedule Management</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Set your working hours and availability
+            </p>
+          </div>
+          <div className="p-6">
+            <ScheduleManager />
+          </div>
+        </div>
+
+        {/* Orders & Appointments Management Section */}
+        {formData.id && (
+          <div className="mt-6">
+            <ProviderOrdersManager providerId={formData.id} />
+          </div>
+        )}
       </div>
     </div>
   )

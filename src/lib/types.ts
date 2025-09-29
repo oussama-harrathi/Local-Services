@@ -1,4 +1,4 @@
-export type Category = "food_home" | "haircut_mobile" | "cleaning" | "tutoring" | "repairs";
+export type Category = "food_home" | "haircut_mobile" | "cleaning" | "tutoring" | "repairs" | "pet_care" | "gardening" | "photography" | "fitness_training" | "music_lessons";
 
 export type ReviewSummary = {
   rating: number;

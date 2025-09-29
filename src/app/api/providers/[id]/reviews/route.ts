@@ -28,7 +28,7 @@ export async function GET(
     const reviews = await prisma.review.findMany({
       where: { providerId: id },
       include: {
-        reviewer: {
+        user: {
           select: {
             id: true,
             email: true,
@@ -51,20 +51,20 @@ export async function GET(
     const transformedReviews = reviews.map((review: { 
       id: string;
       rating: number;
-      comment: string;
+      text: string;
       createdAt: Date;
-      reviewer: {
+      user: {
         id: string;
         email: string;
       }
     }) => ({
       id: review.id,
       rating: review.rating,
-      comment: review.comment,
+      comment: review.text,
       createdAt: review.createdAt,
       reviewer: {
-        id: review.reviewer.id,
-        name: review.reviewer.email.split('@')[0], // Use email prefix as name
+        id: review.user.id,
+        name: review.user.email.split('@')[0], // Use email prefix as name
       },
     }));
 

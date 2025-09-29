@@ -31,6 +31,8 @@ model User {
   reports         Report[]
   phoneVerifications PhoneVerification[]
   rateLimitEntries   RateLimitEntry[]
+  bookings        Booking[]
+  orders          Order[]
   
   @@map("users")
 }
@@ -101,6 +103,9 @@ model ProviderProfile {
   reviews   Review[]
   favorites Favorite[]
   reports   Report[]   @relation("ProviderReports")
+  schedules ProviderSchedule[]
+  bookings  Booking[]
+  orders    Order[]
   
   @@map("provider_profiles")
 }
@@ -186,4 +191,61 @@ model RateLimitEntry {
   @@index([phone, action, windowStart])
   @@index([ipAddress, action, windowStart])
   @@map("rate_limit_entries")
+}
+
+model ProviderSchedule {
+  id         String   @id @default(cuid())
+  providerId String
+  dayOfWeek  Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime  String   // Format: "HH:MM" (24-hour format)
+  endTime    String   // Format: "HH:MM" (24-hour format)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  // Relations
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@unique([providerId, dayOfWeek])
+  @@map("provider_schedules")
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  customerId  String
+  providerId  String
+  serviceType String   // The category/service being booked
+  date        DateTime // The date and time of the appointment
+  duration    Int      // Duration in minutes
+  notes       String?  // Customer notes
+  status      String   @default("pending") // pending, confirmed, cancelled, completed
+  totalPrice  Float?   // Optional price
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  customer User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@map("bookings")
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  customerId  String
+  providerId  String
+  items       String   // JSON string of ordered items
+  totalPrice  Float
+  notes       String?  // Customer notes
+  status      String   @default("pending") // pending, confirmed, preparing, ready, delivered, cancelled
+  deliveryAddress String?
+  deliveryTime    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  customer User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@map("orders")
 }

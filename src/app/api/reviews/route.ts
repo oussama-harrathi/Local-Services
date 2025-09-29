@@ -80,7 +80,11 @@ export async function POST(request: NextRequest) {
     const isPhoneVerified = !!user.phoneVerified;
 
     // Apply stricter limits for suspicious activity
-    if ((isNewUser && hasNoReviews) || !isPhoneVerified) {
+    // Only apply to users who have already made at least one review OR are unverified after 24 hours
+    const accountAge = Date.now() - user.createdAt.getTime();
+    const isAccountOlderThan24Hours = accountAge > 24 * 60 * 60 * 1000; // 24 hours
+    
+    if ((!hasNoReviews && (isNewUser || !isPhoneVerified)) || (!isPhoneVerified && isAccountOlderThan24Hours)) {
       const suspiciousLimitResult = await suspiciousActivityLimiter.checkLimit(
         user.id,
         user.phone || undefined,
