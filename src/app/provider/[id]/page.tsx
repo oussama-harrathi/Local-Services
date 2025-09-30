@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,13 @@ interface Review {
   };
 }
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+}
+
 interface Provider {
   id: string;
   name: string;
@@ -43,6 +50,7 @@ interface Provider {
   messenger?: string;
   isVerified: boolean;
   createdAt: string;
+  menuItems?: MenuItem[];
   review: {
     rating: number;
     count: number;
@@ -347,13 +355,41 @@ export default function ProviderDetailPage() {
               </Card>
             )}
 
+            {/* Menu Items - Only show for home cooking providers */}
+            {provider.categories.includes('food_home') && provider.menuItems && provider.menuItems.length > 0 && (
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 rounded-t-lg">
+                  <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
+                    <UtensilsCrossed className="w-6 h-6" />
+                    Menu
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {provider.menuItems.map((item) => (
+                      <div key={item.id} className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
+                          <span className="text-xl font-bold text-orange-600">${item.price.toFixed(2)}</span>
+                        </div>
+                        {item.description && (
+                          <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Reviews */}
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
                     <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
-                    {t('reviews.reviews')} ({provider.review.count})
+                    {t('provider.reviews')} ({provider.review.count})
                   </CardTitle>
                   <Button
                     onClick={() => setIsReviewModalOpen(true)}
@@ -526,13 +562,14 @@ export default function ProviderDetailPage() {
         onClose={() => setIsBookingModalOpen(false)}
         providerId={provider.id}
         providerName={provider.name}
-        categories={provider.categories}
+        categories={provider.categories.filter(cat => cat !== 'food_home')}
       />
       <OrderModal
         isOpen={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}
         providerId={provider.id}
         providerName={provider.name}
+        menuItems={provider.menuItems || []}
       />
     </div>
   );

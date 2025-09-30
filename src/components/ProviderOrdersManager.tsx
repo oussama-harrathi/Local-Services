@@ -11,14 +11,15 @@ interface Booking {
   id: string
   serviceType: string
   date: string
-  time: string
   duration: number
   notes?: string
-  status: 'pending' | 'accepted' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
   createdAt: string
+  totalPrice?: number
   customer: {
     name: string
     email: string
+    phone: string
   }
 }
 
@@ -29,14 +30,15 @@ interface Order {
     quantity: number
     price: number
   }>
-  totalAmount: number
+  totalPrice: number
   deliveryAddress: string
   notes?: string
-  status: 'pending' | 'accepted' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
   createdAt: string
   customer: {
     name: string
     email: string
+    phone: string
   }
 }
 
@@ -53,7 +55,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
   const { data: bookings, isLoading: bookingsLoading } = useQuery({
     queryKey: ['provider-bookings', providerId],
     queryFn: async () => {
-      const response = await fetch(`/api/bookings?providerId=${providerId}`)
+      const response = await fetch(`/api/bookings?type=provider`)
       if (!response.ok) throw new Error('Failed to fetch bookings')
       return (await response.json()) as Booking[]
     }
@@ -63,7 +65,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['provider-orders', providerId],
     queryFn: async () => {
-      const response = await fetch(`/api/orders?providerId=${providerId}`)
+      const response = await fetch(`/api/orders?type=provider`)
       if (!response.ok) throw new Error('Failed to fetch orders')
       return (await response.json()) as Order[]
     }
@@ -71,7 +73,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
 
   // Update booking status
   const updateBookingMutation = useMutation({
-    mutationFn: async ({ bookingId, status }: { bookingId: string; status: 'accepted' | 'cancelled' }) => {
+    mutationFn: async ({ bookingId, status }: { bookingId: string; status: 'confirmed' | 'cancelled' }) => {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +93,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
 
   // Update order status
   const updateOrderMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: 'accepted' | 'cancelled' }) => {
+    mutationFn: async ({ orderId, status }: { orderId: string; status: 'confirmed' | 'cancelled' }) => {
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -109,18 +111,22 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
     }
   })
 
-  const handleBookingAction = (bookingId: string, status: 'accepted' | 'cancelled') => {
+  const handleBookingAction = (bookingId: string, status: 'confirmed' | 'cancelled') => {
     updateBookingMutation.mutate({ bookingId, status })
   }
 
-  const handleOrderAction = (orderId: string, status: 'accepted' | 'cancelled') => {
+  const handleOrderAction = (orderId: string, status: 'confirmed' | 'cancelled') => {
     updateOrderMutation.mutate({ orderId, status })
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'accepted': return 'bg-green-100 text-green-800'
+      case 'confirmed': return 'bg-green-100 text-green-800'
+      case 'preparing': return 'bg-blue-100 text-blue-800'
+      case 'ready': return 'bg-purple-100 text-purple-800'
+      case 'delivered': return 'bg-green-100 text-green-800'
+      case 'completed': return 'bg-green-100 text-green-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -226,7 +232,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                     {booking.status === 'pending' && (
                       <div className="flex gap-2 ml-4">
                         <LoadingButton
-                          onClick={() => handleBookingAction(booking.id, 'accepted')}
+                          onClick={() => handleBookingAction(booking.id, 'confirmed')}
                           isLoading={updateBookingMutation.isPending}
                           className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
                         >
@@ -274,7 +280,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                       </div>
                       
                       <h3 className="font-semibold text-gray-900 mb-2">
-                        Order Total: ${order.totalAmount.toFixed(2)}
+                        Order Total: ${order.totalPrice.toFixed(2)}
                       </h3>
                       
                       <div className="space-y-2 mb-3">
@@ -306,7 +312,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                     {order.status === 'pending' && (
                       <div className="flex gap-2 ml-4">
                         <LoadingButton
-                          onClick={() => handleOrderAction(order.id, 'accepted')}
+                          onClick={() => handleOrderAction(order.id, 'confirmed')}
                           isLoading={updateOrderMutation.isPending}
                           className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
                         >

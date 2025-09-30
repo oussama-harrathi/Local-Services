@@ -4,6 +4,13 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 
+const menuItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Menu item name is required'),
+  description: z.string(),
+  price: z.number().min(0, 'Price must be non-negative'),
+})
+
 const providerProfileSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   bio: z.string().min(1, 'Bio is required'),
@@ -14,6 +21,7 @@ const providerProfileSchema = z.object({
   photos: z.array(z.string()).optional().default([]),
   whatsapp: z.string().optional(),
   messenger: z.string().optional(),
+  menuItems: z.array(menuItemSchema).optional().default([]),
 })
 
 export async function GET() {
@@ -44,6 +52,7 @@ export async function GET() {
       photos: (profile as any).photos ? (profile as any).photos.split(',').map((photo: string) => photo.trim()).filter((photo: string) => photo && photo.length > 0 && photo !== 'null' && photo !== 'undefined' && (photo.startsWith('http') || photo.startsWith('/') || (photo.startsWith('data:') && photo.length > 20))) : [],
       whatsapp: profile.whatsapp,
       messenger: profile.messenger,
+      menuItems: profile.menuItems || null,
       isVerified: profile.isVerified,
       createdAt: profile.createdAt
     })
@@ -82,6 +91,7 @@ export async function PUT(request: NextRequest) {
       avatarUrl: validatedData.photos?.[0] || '',
       whatsapp: validatedData.whatsapp || null,
       messenger: validatedData.messenger || null,
+      menuItems: validatedData.menuItems?.length ? JSON.stringify(validatedData.menuItems) : null,
     };
 
     const createData = {
@@ -96,6 +106,7 @@ export async function PUT(request: NextRequest) {
       avatarUrl: validatedData.photos?.[0] || '',
       whatsapp: validatedData.whatsapp || null,
       messenger: validatedData.messenger || null,
+      menuItems: validatedData.menuItems?.length ? JSON.stringify(validatedData.menuItems) : null,
     };
 
     const profile = await prisma.providerProfile.upsert({

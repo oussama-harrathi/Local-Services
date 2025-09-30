@@ -76,6 +76,7 @@ export async function GET(
       photos: (providerProfile as any).photos ? (providerProfile as any).photos.split(',').map((photo: string) => photo.trim()).filter((photo: string) => photo && photo.length > 0 && photo !== 'null' && photo !== 'undefined' && (photo.startsWith('http') || photo.startsWith('/') || (photo.startsWith('data:') && photo.length > 20))) : [],
       whatsapp: providerProfile.whatsapp,
       messenger: providerProfile.messenger,
+      menuItems: providerProfile.menuItems ? JSON.parse(providerProfile.menuItems) : [],
       isVerified: providerProfile.isVerified,
       createdAt: providerProfile.createdAt,
       review: {

@@ -111,7 +111,7 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
             >
               {categories.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {t(`categories.${category}`)}
                 </option>
               ))}
             </select>

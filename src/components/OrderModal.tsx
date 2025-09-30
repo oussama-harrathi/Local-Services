@@ -8,6 +8,12 @@ import { toast } from 'react-hot-toast'
 import { LoadingButton } from '@/components/ui/LoadingSpinner'
 import { useLanguage } from '@/contexts/LanguageContext'
 
+interface MenuItem {
+  name: string
+  price: number
+  description: string
+}
+
 interface OrderItem {
   name: string
   price: number
@@ -20,19 +26,10 @@ interface OrderModalProps {
   onClose: () => void
   providerId: string
   providerName: string
+  menuItems: MenuItem[]
 }
 
-// Sample menu items - in a real app, this would come from the provider's menu
-const SAMPLE_MENU_ITEMS = [
-  { name: 'Traditional Couscous', price: 15.00, description: 'Authentic Tunisian couscous with vegetables and meat' },
-  { name: 'Brik à l\'oeuf', price: 8.00, description: 'Crispy pastry filled with egg and tuna' },
-  { name: 'Makroudh', price: 12.00, description: 'Traditional semolina pastry with dates' },
-  { name: 'Harissa Chicken', price: 18.00, description: 'Spicy grilled chicken with harissa sauce' },
-  { name: 'Lablabi', price: 10.00, description: 'Traditional chickpea soup' },
-  { name: 'Baklava', price: 6.00, description: 'Sweet pastry with nuts and honey' }
-]
-
-export default function OrderModal({ isOpen, onClose, providerId, providerName }: OrderModalProps) {
+export default function OrderModal({ isOpen, onClose, providerId, providerName, menuItems }: OrderModalProps) {
   const { data: session } = useSession()
   const { t } = useLanguage()
   const queryClient = useQueryClient()
@@ -50,7 +47,7 @@ export default function OrderModal({ isOpen, onClose, providerId, providerName }
         },
         body: JSON.stringify({
           providerId,
-          items: JSON.stringify(data.items),
+          items: data.items,
           deliveryAddress: data.deliveryAddress,
           notes: data.notes
         }),
@@ -71,7 +68,7 @@ export default function OrderModal({ isOpen, onClose, providerId, providerName }
     }
   })
 
-  const addItem = (menuItem: typeof SAMPLE_MENU_ITEMS[0]) => {
+  const addItem = (menuItem: MenuItem) => {
     const existingItem = orderItems.find(item => item.name === menuItem.name)
     if (existingItem) {
       setOrderItems(prev => prev.map(item => 
@@ -150,48 +147,54 @@ export default function OrderModal({ isOpen, onClose, providerId, providerName }
           {/* Menu Items */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-4 text-black">Menu</h3>
-            <div className="grid gap-4">
-              {SAMPLE_MENU_ITEMS.map((item) => {
-                const orderItem = orderItems.find(oi => oi.name === item.name)
-                return (
-                  <div key={item.name} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-black">{item.name}</h4>
-                        <p className="text-sm text-black mt-1">{item.description}</p>
-                        <p className="text-lg font-semibold text-green-600 mt-2">${item.price.toFixed(2)}</p>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        {orderItem ? (
-                          <div className="flex items-center gap-2">
+            {menuItems.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>No menu items available</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {menuItems.map((item) => {
+                  const orderItem = orderItems.find(oi => oi.name === item.name)
+                  return (
+                    <div key={item.name} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-black">{item.name}</h4>
+                          <p className="text-sm text-black mt-1">{item.description}</p>
+                          <p className="text-lg font-semibold text-green-600 mt-2">${item.price.toFixed(2)}</p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {orderItem ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => updateQuantity(item.name, orderItem.quantity - 1)}
+                                className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="w-8 text-center font-medium text-black">{orderItem.quantity}</span>
+                              <button
+                                onClick={() => updateQuantity(item.name, orderItem.quantity + 1)}
+                                className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
                             <button
-                              onClick={() => updateQuantity(item.name, orderItem.quantity - 1)}
-                              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                              onClick={() => addItem(item)}
+                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                             >
-                              <Minus className="h-4 w-4" />
+                              Add
                             </button>
-                            <span className="w-8 text-center font-medium text-black">{orderItem.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.name, orderItem.quantity + 1)}
-                              className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => addItem(item)}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                          >
-                            Add
-                          </button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Order Summary */}

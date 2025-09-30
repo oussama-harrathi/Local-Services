@@ -94,6 +94,7 @@ model ProviderProfile {
   photos     String?  // Comma-separated photo URLs for SQLite compatibility
   whatsapp   String?
   messenger  String?
+  menuItems  String?  // JSON string of menu items for food providers
   isVerified Boolean  @default(false)
   isHidden   Boolean  @default(false)
   createdAt  DateTime @default(now())
