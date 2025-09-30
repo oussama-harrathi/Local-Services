@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { enqueueBookingNotifications } from '@/app/api/notifications/enqueue/route';
 
 const createBookingSchema = z.object({
   providerId: z.string(),
@@ -53,6 +54,24 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Enqueue booking notifications
+    try {
+      await enqueueBookingNotifications(
+        booking.id, 
+        booking.customerId, 
+        booking.providerId,
+        session.user.name || 'Customer',
+        provider.name,
+        booking.serviceType,
+        booking.date,
+        booking.duration,
+        booking.totalPrice || undefined
+      );
+    } catch (notificationError) {
+      console.error('Failed to enqueue booking notifications:', notificationError);
+      // Don't fail the booking creation if notifications fail
+    }
 
     return NextResponse.json(booking);
   } catch (error) {

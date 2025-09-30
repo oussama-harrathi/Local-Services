@@ -38,6 +38,16 @@ export default function BookingsPage() {
     enabled: !!session?.user?.id,
   });
 
+  // Helper function to check if booking can be cancelled (24 hours before appointment)
+  const canCancelBooking = (bookingDate: string): boolean => {
+    const appointmentTime = new Date(bookingDate);
+    const currentTime = new Date();
+    const timeDifference = appointmentTime.getTime() - currentTime.getTime();
+    const hoursUntilAppointment = timeDifference / (1000 * 60 * 60);
+    
+    return hoursUntilAppointment >= 24;
+  };
+
   // Cancel booking mutation
   const cancelBookingMutation = useMutation({
     mutationFn: async (bookingId: string) => {
@@ -202,16 +212,23 @@ export default function BookingsPage() {
                     </div>
                   </div>
 
-                  {booking.status === 'pending' && (
+                  {(booking.status === 'pending' || booking.status === 'confirmed') && (
                     <div className="mt-6 pt-6 border-t border-gray-200">
                       <div className="flex justify-end">
-                        <LoadingButton
-                          onClick={() => cancelBookingMutation.mutate(booking.id)}
-                          isLoading={cancelBookingMutation.isPending}
-                          className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100"
-                        >
-                          {t('Cancel Appointment')}
-                        </LoadingButton>
+                        {canCancelBooking(booking.date) ? (
+                          <LoadingButton
+                            onClick={() => cancelBookingMutation.mutate(booking.id)}
+                            isLoading={cancelBookingMutation.isPending}
+                            className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100"
+                          >
+                            {t('Cancel Appointment')}
+                          </LoadingButton>
+                        ) : (
+                          <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded-md">
+                            <AlertCircle className="w-4 h-4" />
+                            {t('Cannot cancel (less than 24 hours)')}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

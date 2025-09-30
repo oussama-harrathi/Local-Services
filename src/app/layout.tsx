@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import RootLayoutClient from "./RootLayoutClient";
 import { RouteLoadingProvider, RouteLoader } from '@/components/PageLoader';
 import ReCaptchaProvider from '@/components/ReCaptchaProvider';
+import NotificationScheduler from '@/components/NotificationScheduler';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +56,7 @@ export default function RootLayout({
                   </RouteLoadingProvider>
                 </ReCaptchaProvider>
                 <Toaster position="top-right" />
+                <NotificationScheduler />
               </QueryProvider>
             </SessionProvider>
           </RootLayoutClient>

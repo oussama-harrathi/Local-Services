@@ -11,6 +11,7 @@ interface Booking {
   id: string
   serviceType: string
   date: string
+  time: string
   duration: number
   notes?: string
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
@@ -132,6 +133,15 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
     }
   }
 
+  // Check if booking can be cancelled (24-hour rule)
+  const canCancelBooking = (bookingDate: string) => {
+    const appointmentDate = new Date(bookingDate);
+    const now = new Date();
+    const timeDifference = appointmentDate.getTime() - now.getTime();
+    const hoursUntilBooking = timeDifference / (1000 * 60 * 60);
+    return hoursUntilBooking >= 24;
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -229,22 +239,31 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                       </div>
                     </div>
                     
-                    {booking.status === 'pending' && (
+                    {(booking.status === 'pending' || booking.status === 'confirmed') && (
                       <div className="flex gap-2 ml-4">
-                        <LoadingButton
-                          onClick={() => handleBookingAction(booking.id, 'confirmed')}
-                          isLoading={updateBookingMutation.isPending}
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                        >
-                          <Check className="w-4 h-4" />
-                        </LoadingButton>
-                        <LoadingButton
-                          onClick={() => handleBookingAction(booking.id, 'cancelled')}
-                          isLoading={updateBookingMutation.isPending}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                        >
-                          <X className="w-4 h-4" />
-                        </LoadingButton>
+                        {booking.status === 'pending' && (
+                          <LoadingButton
+                            onClick={() => handleBookingAction(booking.id, 'confirmed')}
+                            isLoading={updateBookingMutation.isPending}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                          >
+                            <Check className="w-4 h-4" />
+                          </LoadingButton>
+                        )}
+                        {canCancelBooking(booking.date) ? (
+                          <LoadingButton
+                            onClick={() => handleBookingAction(booking.id, 'cancelled')}
+                            isLoading={updateBookingMutation.isPending}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                          >
+                            <X className="w-4 h-4" />
+                          </LoadingButton>
+                        ) : (
+                          <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-500 rounded text-sm">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-xs">Cannot cancel (less than 24h)</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

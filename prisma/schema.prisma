@@ -33,6 +33,8 @@ model User {
   rateLimitEntries   RateLimitEntry[]
   bookings        Booking[]
   orders          Order[]
+  notifications   Notification[]
+  notificationPreference NotificationPreference?
   
   @@map("users")
 }
@@ -249,4 +251,39 @@ model Order {
   provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
   
   @@map("orders")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String   // Recipient user ID
+  type        String   // booking_confirmation, booking_reminder_24h, booking_reminder_2h, review_request
+  title       String   // Email subject
+  content     String   // Email body content
+  metadata    String?  // JSON string for additional data (booking ID, etc.)
+  status      String   @default("pending") // pending, sent, failed
+  scheduledAt DateTime // When to send the notification
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([status, scheduledAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                    String  @id @default(cuid())
+  userId                String  @unique
+  emailBookingConfirm   Boolean @default(true)
+  emailBookingReminder  Boolean @default(true)
+  emailReviewRequest    Boolean @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notification_preferences")
 }
