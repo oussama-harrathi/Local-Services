@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Phone, Mail, CheckCircle, XCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { LoadingSpinner, LoadingButton } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -107,6 +107,15 @@ export default function BookingsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
+          <div className="flex items-center space-x-4 mb-4">
+            <button
+              onClick={() => window.history.back()}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              {t('Back')}
+            </button>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900">{t('My Appointments')}</h1>
           <p className="text-gray-600 mt-2">{t('View and manage your scheduled appointments')}</p>
         </div>
