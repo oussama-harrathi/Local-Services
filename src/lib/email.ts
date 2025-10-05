@@ -11,11 +11,6 @@ export interface EmailTemplate {
 export class EmailService {
   static async sendEmail({ to, subject, html }: EmailTemplate): Promise<boolean> {
     try {
-      console.log('Sending email with Resend...');
-      console.log('From:', 'LocalSpark <onboarding@resend.dev>');
-      console.log('To:', to);
-      console.log('Subject:', subject);
-      
       const { data, error } = await resend.emails.send({
         from: 'LocalSpark <onboarding@resend.dev>',
         to: [to],
@@ -25,15 +20,12 @@ export class EmailService {
 
       if (error) {
         console.error('Failed to send email:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
         return false;
       }
 
-      console.log('Email sent successfully:', data);
       return true;
     } catch (error) {
       console.error('Email service error:', error);
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       return false;
     }
   }
