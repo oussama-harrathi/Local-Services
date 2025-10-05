@@ -21,6 +21,14 @@ export async function GET(
             image: true,
           },
         },
+        schedules: {
+          where: {
+            isActive: true
+          },
+          orderBy: {
+            dayOfWeek: 'asc'
+          }
+        },
         reviews: {
           where: {
             isHidden: false // Only show visible reviews
@@ -79,6 +87,12 @@ export async function GET(
       menuItems: providerProfile.menuItems ? JSON.parse(providerProfile.menuItems) : [],
       isVerified: providerProfile.isVerified,
       createdAt: providerProfile.createdAt,
+      schedules: providerProfile.schedules?.map((schedule: any) => ({
+        dayOfWeek: schedule.dayOfWeek,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        isActive: schedule.isActive
+      })) || [],
       review: {
         rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
         count: providerProfile._count.reviews,

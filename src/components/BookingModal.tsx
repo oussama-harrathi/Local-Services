@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Calendar, Clock, User, MessageSquare, X } from 'lucide-react'
@@ -16,18 +16,84 @@ interface BookingModalProps {
   categories: string[]
 }
 
+interface ProviderSchedule {
+  id: string
+  dayOfWeek: number // 0 = Sunday, 6 = Saturday
+  startTime: string // HH:MM format
+  endTime: string // HH:MM format
+  isActive: boolean
+}
+
 export default function BookingModal({ isOpen, onClose, providerId, providerName, categories }: BookingModalProps) {
   const { data: session } = useSession()
   const { t } = useLanguage()
   const queryClient = useQueryClient()
   
   const [formData, setFormData] = useState({
-    serviceType: categories[0] || '',
+    serviceType: categories.filter(cat => cat !== 'food_home')[0] || '',
     date: '',
     time: '',
     duration: 60,
     notes: ''
   })
+  const [providerSchedules, setProviderSchedules] = useState<ProviderSchedule[]>([])
+  const [timeError, setTimeError] = useState('')
+
+  // Fetch provider schedules when modal opens
+  useEffect(() => {
+    if (isOpen && providerId) {
+      fetch(`/api/providers/${providerId}/schedules`)
+        .then(res => res.json())
+        .then(data => setProviderSchedules(data))
+        .catch(err => console.error('Failed to fetch provider schedules:', err))
+    }
+  }, [isOpen, providerId])
+
+  // Validate time selection
+  const validateTimeSelection = (date: string, time: string) => {
+    setTimeError('')
+    
+    if (!date || !time) return true
+    
+    const selectedDateTime = new Date(`${date}T${time}`)
+    const now = new Date()
+    
+    // Check if selected time is in the past
+    if (selectedDateTime <= now) {
+      setTimeError('Please select a future time')
+      return false
+    }
+    
+    // Check if selected time is within provider's working hours
+    const selectedDay = selectedDateTime.getDay() // 0 = Sunday, 6 = Saturday
+    const selectedTimeStr = time
+    
+    const daySchedule = providerSchedules.find(schedule => 
+      schedule.dayOfWeek === selectedDay && schedule.isActive
+    )
+    
+    if (!daySchedule) {
+      setTimeError('Provider is not available on this day')
+      return false
+    }
+    
+    // Convert time strings to minutes for comparison
+    const timeToMinutes = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':').map(Number)
+      return hours * 60 + minutes
+    }
+    
+    const selectedMinutes = timeToMinutes(selectedTimeStr)
+    const startMinutes = timeToMinutes(daySchedule.startTime)
+    const endMinutes = timeToMinutes(daySchedule.endTime)
+    
+    if (selectedMinutes < startMinutes || selectedMinutes >= endMinutes) {
+      setTimeError(`Provider is available from ${daySchedule.startTime} to ${daySchedule.endTime} on this day`)
+      return false
+    }
+    
+    return true
+  }
 
   const bookingMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -52,7 +118,7 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
       queryClient.invalidateQueries({ queryKey: ['bookings'] })
       onClose()
       setFormData({
-        serviceType: categories[0] || '',
+        serviceType: categories.filter(cat => cat !== 'food_home')[0] || '',
         date: '',
         time: '',
         duration: 60,
@@ -70,6 +136,12 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
       toast.error('Please sign in to book an appointment')
       return
     }
+    
+    // Validate time selection before submitting
+    if (!validateTimeSelection(formData.date, formData.time)) {
+      return
+    }
+    
     bookingMutation.mutate(formData)
   }
 
@@ -109,11 +181,15 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               required
             >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {t(`categories.${category}`)}
-                </option>
-              ))}
+              {categories?.length > 0 ? (
+                categories.filter(category => category !== 'food_home').map((category) => (
+                  <option key={category} value={category}>
+                    {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
+                  </option>
+                ))
+              ) : (
+                <option value="">No services available</option>
+              )}
             </select>
           </div>
 
@@ -125,7 +201,13 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, date: e.target.value }))
+                  // Validate time selection when date changes
+                  if (formData.time) {
+                    validateTimeSelection(e.target.value, formData.time)
+                  }
+                }}
                 min={new Date().toISOString().split('T')[0]}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 required
@@ -138,10 +220,21 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
               <input
                 type="time"
                 value={formData.time}
-                onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, time: e.target.value }))
+                  // Validate time selection in real-time
+                  validateTimeSelection(formData.date, e.target.value)
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 text-black ${
+                  timeError 
+                    ? 'border-red-300 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 required
               />
+              {timeError && (
+                <p className="mt-1 text-sm text-red-600">{timeError}</p>
+              )}
             </div>
           </div>
 

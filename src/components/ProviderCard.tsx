@@ -1,7 +1,7 @@
 'use client';
 
 import { Provider } from '@/lib/types';
-import { Star, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -35,8 +35,38 @@ const categoryColors = {
   music_lessons: 'bg-violet-100 text-violet-700',
 };
 
+const DAYS_OF_WEEK = [
+  'Sunday',
+  'Monday', 
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+];
+
 export default function ProviderCard({ provider }: ProviderCardProps) {
   const router = useRouter();
+  
+  // Helper function to check if provider is currently open
+  const isProviderOpen = (schedules?: { dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }[]) => {
+    if (!schedules || schedules.length === 0) return null;
+    
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
+    
+    const todaySchedule = schedules.find(schedule => schedule.dayOfWeek === currentDay);
+    if (!todaySchedule) return false;
+    
+    const [startHour, startMin] = todaySchedule.startTime.split(':').map(Number);
+    const [endHour, endMin] = todaySchedule.endTime.split(':').map(Number);
+    
+    const startTime = startHour * 60 + startMin;
+    const endTime = endHour * 60 + endMin;
+    
+    return currentTime >= startTime && currentTime <= endTime;
+  };
   
   const normalizePhone = (phone: string) => {
     return phone.replace(/[^\d+]/g, '');
@@ -133,10 +163,32 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
               {provider.name}
             </h3>
             
-            <div className="flex items-center justify-center space-x-1 mt-1">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{provider.city}</span>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <MapPin className="w-4 h-4" />
+              <span>{provider.city}</span>
             </div>
+
+            {/* Current Status */}
+            {provider.schedules && provider.schedules.length > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                {(() => {
+                  const isOpen = isProviderOpen(provider.schedules);
+                  if (isOpen === null) return null;
+                  return (
+                    <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+                      isOpen 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${
+                        isOpen ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                      <span className="font-medium">{isOpen ? 'Open' : 'Closed'}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             
             {/* Rating */}
             <div className="flex items-center justify-center space-x-1 mt-2">

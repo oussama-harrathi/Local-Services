@@ -4,6 +4,75 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
+// Helper function to enqueue order status update notifications
+async function enqueueOrderStatusUpdateNotification(orderId: string, customerId: string, providerId: string, status: string) {
+  try {
+    // Get order details for metadata
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        provider: {
+          select: {
+            name: true,
+          },
+        },
+        customer: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      console.error('Order not found for notification:', orderId);
+      return;
+    }
+
+    const metadata = JSON.stringify({
+      orderId,
+      status,
+      providerName: order.provider.name,
+      customerName: order.customer.name,
+      items: order.items,
+      totalPrice: order.totalPrice,
+      orderDate: order.createdAt.toISOString(),
+    });
+
+    // Create customer notification for confirmed orders
+    if (status === 'confirmed') {
+      await prisma.notification.create({
+        data: {
+          userId: customerId,
+          type: 'order_update',
+          title: `Order Confirmed`,
+          content: `Your food order has been confirmed by ${order.provider.name}.`,
+          scheduledAt: new Date(),
+          metadata,
+          status: 'pending',
+        },
+      });
+    }
+
+    // Also notify provider for cancellations
+    if (status === 'cancelled') {
+      await prisma.notification.create({
+        data: {
+          userId: providerId,
+          type: 'order_update',
+          title: `Order Cancelled`,
+          content: `A food order has been cancelled.`,
+          scheduledAt: new Date(),
+          metadata,
+          status: 'pending',
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Failed to enqueue order status update notification:', error);
+  }
+}
+
 const updateOrderSchema = z.object({
   status: z.enum(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']),
 });
@@ -69,6 +138,19 @@ export async function PATCH(
         },
       },
     });
+
+    // Enqueue order status update notifications
+    try {
+      await enqueueOrderStatusUpdateNotification(
+        order.id,
+        order.customerId,
+        order.provider.userId,
+        status
+      );
+    } catch (notificationError) {
+      console.error('Failed to enqueue order status update notifications:', notificationError);
+      // Don't fail the order update if notifications fail
+    }
 
     return NextResponse.json({
       ...updatedOrder,

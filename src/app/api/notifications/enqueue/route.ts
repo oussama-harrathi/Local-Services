@@ -6,11 +6,11 @@ import { z } from 'zod';
 
 const enqueueNotificationSchema = z.object({
   userId: z.string(),
-  type: z.enum(['booking_confirmation', 'booking_reminder_24h', 'booking_reminder_2h', 'review_request']),
+  type: z.enum(['booking_confirmation', 'booking_reminder_24h', 'booking_reminder_2h', 'review_request', 'booking_update']),
   title: z.string(),
   content: z.string(),
-  scheduledAt: z.string().datetime(),
-  metadata: z.string().optional(),
+  scheduledAt: z.string().datetime().optional(),
+  metadata: z.union([z.string(), z.object({}).passthrough()]).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
         type: validatedData.type,
         title: validatedData.title,
         content: validatedData.content,
-        scheduledAt: new Date(validatedData.scheduledAt),
-        metadata: validatedData.metadata,
+        scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : new Date(),
+        metadata: typeof validatedData.metadata === 'string' ? validatedData.metadata : JSON.stringify(validatedData.metadata),
         status: 'pending',
       },
     });
@@ -89,6 +89,8 @@ export async function enqueueBookingNotifications(
       appointmentDate: appointmentDate.toISOString(),
       duration,
       totalPrice,
+      providerName,
+      customerName,
     });
 
     // 1. Booking confirmation (immediate)

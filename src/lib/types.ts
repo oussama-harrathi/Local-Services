@@ -16,6 +16,12 @@ export type Provider = {
   review: ReviewSummary;
   whatsapp?: string;
   messenger?: string;
+  schedules?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isActive: boolean;
+  }[];
 };
 
 export type CityCenter = {

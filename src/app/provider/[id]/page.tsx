@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart, UtensilsCrossed } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart, UtensilsCrossed, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +51,12 @@ interface Provider {
   isVerified: boolean;
   createdAt: string;
   menuItems?: MenuItem[];
+  schedules?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isActive: boolean;
+  }[];
   review: {
     rating: number;
     count: number;
@@ -69,6 +75,18 @@ export default function ProviderDetailPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  const DAYS_OF_WEEK = [
+    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+  ];
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
 
   useEffect(() => {
     const fetchProvider = async () => {
@@ -259,6 +277,33 @@ export default function ProviderDetailPage() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Working Hours */}
+            {provider.schedules && provider.schedules.length > 0 && (
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+                  <CardTitle className="text-2xl text-gray-800 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                    <Clock className="w-6 h-6" />
+                    Working Hours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    {provider.schedules.map((schedule) => (
+                      <div key={schedule.dayOfWeek} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <span className="font-medium text-gray-700">
+                          {DAYS_OF_WEEK[schedule.dayOfWeek]}
+                        </span>
+                        <span className="text-gray-600">
+                          {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Photo Gallery */}
             {provider.photos && provider.photos.length > 0 && (
@@ -558,12 +603,12 @@ export default function ProviderDetailPage() {
         }}
       />
       <BookingModal
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        providerId={provider.id}
-        providerName={provider.name}
-        categories={provider.categories.filter(cat => cat !== 'food_home')}
-      />
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          providerId={provider.id}
+          providerName={provider.name}
+          categories={provider.categories}
+        />
       <OrderModal
         isOpen={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}

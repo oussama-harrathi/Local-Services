@@ -40,22 +40,65 @@ export default function OrderModal({ isOpen, onClose, providerId, providerName, 
 
   const orderMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log('=== ORDER MUTATION START ===');
+      console.log('Provider ID:', providerId);
+      console.log('Order data:', data);
+      
+      const requestBody = {
+        providerId,
+        items: data.items,
+        deliveryAddress: data.deliveryAddress,
+        notes: data.notes
+      };
+      
+      console.log('Request body:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          providerId,
-          items: data.items,
-          deliveryAddress: data.deliveryAddress,
-          notes: data.notes
-        }),
+        body: JSON.stringify(requestBody),
       })
-      if (!response.ok) throw new Error('Failed to create order')
-      return response.json()
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        
+        // Only log detailed error info in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Order creation failed (dev only):', {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
+        }
+        
+        // Try to parse the error response to get a user-friendly message
+        let errorMessage = 'Failed to place order. Please try again.';
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // If parsing fails, use the raw error text if it's reasonable
+          if (errorText && errorText.length < 200) {
+            errorMessage = errorText;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const result = await response.json();
+      console.log('Order creation successful:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Order mutation success:', data);
       toast.success('Order placed successfully!')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       onClose()
@@ -63,8 +106,12 @@ export default function OrderModal({ isOpen, onClose, providerId, providerName, 
       setDeliveryAddress('')
       setOrderNotes('')
     },
-    onError: () => {
-      toast.error('Failed to place order')
+    onError: (error) => {
+      // Only log in development for debugging, not as console.error
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Order mutation error (dev only):', error);
+      }
+      toast.error(error.message || 'Failed to place order. Please try again.')
     }
   })
 

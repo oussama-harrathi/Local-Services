@@ -7,30 +7,59 @@ import { z } from 'zod';
 // Helper function to enqueue status update notifications
 async function enqueueStatusUpdateNotification(bookingId: string, customerId: string, providerId: string, status: string) {
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications/enqueue`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    // Get booking details for metadata
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        provider: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      console.error('Booking not found for notification:', bookingId);
+      return;
+    }
+
+    const metadata = JSON.stringify({
+      bookingId,
+      status,
+      providerName: booking.provider.name,
+      customerName: booking.customerName,
+      serviceType: booking.serviceType,
+      appointmentDate: booking.date.toISOString(),
+      duration: booking.duration,
+      totalPrice: booking.totalPrice,
+    });
+
+    // Create customer notification directly in database
+    await prisma.notification.create({
+      data: {
         userId: customerId,
         type: 'booking_update',
         title: `Booking ${status}`,
         content: `Your booking has been ${status}.`,
-        metadata: { bookingId, status }
-      })
+        scheduledAt: new Date(),
+        metadata,
+        status: 'pending',
+      },
     });
 
     // Also notify provider for cancellations
     if (status === 'cancelled') {
-      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications/enqueue`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      await prisma.notification.create({
+        data: {
           userId: providerId,
           type: 'booking_update',
           title: `Booking ${status}`,
           content: `A booking has been ${status}.`,
-          metadata: { bookingId, status }
-        })
+          scheduledAt: new Date(),
+          metadata,
+          status: 'pending',
+        },
       });
     }
   } catch (error) {
@@ -44,21 +73,21 @@ const updateBookingSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { status } = updateBookingSchema.parse(body);
 
     // Find the booking
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         provider: true,
         customer: true,
@@ -82,23 +111,31 @@ export async function PATCH(
       return NextResponse.json({ error: 'Only providers can confirm bookings' }, { status: 403 });
     }
 
-    // Check 24-hour cancellation policy for both providers and customers
+    // Check 24-hour cancellation policy
     if (status === 'cancelled') {
       const bookingDate = new Date(booking.date);
       const now = new Date();
       const timeDifference = bookingDate.getTime() - now.getTime();
       const hoursUntilBooking = timeDifference / (1000 * 60 * 60);
 
-      if (hoursUntilBooking < 24) {
+      // Providers can reject pending appointments anytime, but cannot cancel confirmed ones within 24h
+      if (isProvider && booking.status === 'pending') {
+        // Providers can always reject pending appointments (no time restriction)
+      } else if (hoursUntilBooking < 24) {
+        // For all other cases (customer cancellation or provider cancelling confirmed booking)
+        const errorMessage = isProvider 
+          ? 'Cannot cancel confirmed appointments less than 24 hours before the scheduled time.'
+          : 'Cancellation not allowed. Appointments can only be cancelled at least 24 hours before the scheduled time.';
+        
         return NextResponse.json({ 
-          error: 'Cancellation not allowed. Appointments can only be cancelled at least 24 hours before the scheduled time.' 
+          error: errorMessage 
         }, { status: 400 });
       }
     }
 
     // Update the booking
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
       include: {
         provider: {
@@ -143,7 +180,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -152,9 +189,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Find the booking
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         provider: true,
       },
@@ -174,7 +213,7 @@ export async function DELETE(
 
     // Delete the booking
     await prisma.booking.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Booking deleted successfully' });

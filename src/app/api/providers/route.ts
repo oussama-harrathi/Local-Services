@@ -46,11 +46,19 @@ export async function GET(request: Request) {
             rating: true,
           },
         },
+        schedules: {
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            dayOfWeek: 'asc',
+          },
+        },
       },
     });
 
     // Transform database records to match the Provider type
-    let providers: Provider[] = providerProfiles.map((profile: { id: string; name: string; city: string; lat: number; lng: number; categories: string; bio: string; avatarUrl: string; whatsapp: string | null; messenger: string | null; reviews: { rating: number }[]; user: any }) => {
+    let providers: Provider[] = providerProfiles.map((profile: { id: string; name: string; city: string; lat: number; lng: number; categories: string; bio: string; avatarUrl: string; whatsapp: string | null; messenger: string | null; reviews: { rating: number }[]; schedules: { dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }[]; user: any }) => {
       // Calculate average rating and count from reviews
       const ratings = profile.reviews.map((r: { rating: number }) => r.rating);
       const averageRating = ratings.length > 0 
@@ -75,6 +83,7 @@ export async function GET(request: Request) {
         },
         whatsapp: profile.whatsapp || undefined,
         messenger: profile.messenger || undefined,
+        schedules: profile.schedules,
       };
     });
 

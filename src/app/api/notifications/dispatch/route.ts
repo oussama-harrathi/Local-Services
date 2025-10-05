@@ -58,6 +58,9 @@ export async function POST(request: NextRequest) {
             case 'review_request':
               shouldSend = prefs.emailReviewRequest;
               break;
+            case 'order_update':
+              shouldSend = prefs.emailBookingConfirm; // Use booking confirm preference for orders
+              break;
           }
         }
 
@@ -189,6 +192,27 @@ function generateEmailContent(
         metadata.providerName || 'Provider',
         metadata.serviceType,
         metadata.bookingId
+      );
+
+    case 'booking_update':
+      return EmailService.generateBookingUpdateEmail(
+        userName,
+        metadata.providerName || 'Provider',
+        metadata.serviceType,
+        metadata.status,
+        appointmentDate,
+        metadata.duration,
+        metadata.totalPrice
+      );
+
+    case 'order_update':
+      return EmailService.generateOrderUpdateEmail(
+        userName,
+        metadata.providerName || 'Provider',
+        metadata.status,
+        metadata.items,
+        metadata.totalPrice,
+        new Date(metadata.orderDate)
       );
 
     default:
