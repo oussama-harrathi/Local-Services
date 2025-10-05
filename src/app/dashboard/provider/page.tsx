@@ -12,6 +12,7 @@ import MapPicker from '@/components/MapPicker'
 import PhotoUploadWithDelete from '@/components/PhotoUploadWithDelete'
 import ScheduleManager from '@/components/ScheduleManager'
 import ProviderOrdersManager from '@/components/ProviderOrdersManager'
+import ProviderNotificationButtonFixed from '@/components/ProviderNotificationButtonFixed'
 
 interface MenuItem {
   id: string
@@ -209,13 +210,19 @@ export default function ProviderDashboard() {
         {/* Provider Profile Section */}
         <div className="bg-white shadow rounded-lg mb-6">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <User className="h-6 w-6" />
-              {t('dashboard.providerDashboard')}
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              {t('dashboard.createAndManage')}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <User className="h-6 w-6" />
+                  {t('dashboard.providerDashboard')}
+                </h1>
+                <p className="mt-1 text-sm text-gray-600">
+                  {t('dashboard.createAndManage')}
+                </p>
+              </div>
+              {/* Provider Notification Button */}
+              <ProviderNotificationButtonFixed />
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">

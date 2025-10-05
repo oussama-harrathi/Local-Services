@@ -16,6 +16,11 @@ async function enqueueStatusUpdateNotification(bookingId: string, customerId: st
             name: true,
           },
         },
+        customer: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -28,7 +33,7 @@ async function enqueueStatusUpdateNotification(bookingId: string, customerId: st
       bookingId,
       status,
       providerName: booking.provider.name,
-      customerName: booking.customerName,
+      customerName: booking.customer.name,
       serviceType: booking.serviceType,
       appointmentDate: booking.date.toISOString(),
       duration: booking.duration,

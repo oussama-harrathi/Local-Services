@@ -133,12 +133,49 @@ export async function POST(request: NextRequest) {
             select: {
               name: true,
               city: true,
+              userId: true,
+            },
+          },
+          customer: {
+            select: {
+              name: true,
             },
           },
         },
       });
 
       console.log('Order created successfully:', order.id);
+
+      // Create notification for provider about new order request
+      try {
+        const metadata = JSON.stringify({
+          orderId: order.id,
+          customerName: order.customer.name,
+          items: validatedData.items,
+          totalPrice,
+          deliveryAddress: validatedData.deliveryAddress,
+          deliveryTime: validatedData.deliveryTime,
+          notes: validatedData.notes,
+        });
+
+        await prisma.notification.create({
+          data: {
+            userId: order.provider.userId,
+            type: 'new_order_request',
+            title: 'New Order Request',
+            content: `You have received a new order request from ${order.customer.name} for $${totalPrice.toFixed(2)}.`,
+            scheduledAt: new Date(),
+            metadata,
+            status: 'pending',
+          },
+        });
+
+        console.log('Provider notification created for new order');
+      } catch (notificationError) {
+        console.error('Failed to create provider notification:', notificationError);
+        // Don't fail the order creation if notification fails
+      }
+
       console.log('=== ORDER CREATION END ===');
 
       return NextResponse.json({

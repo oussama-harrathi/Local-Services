@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notification API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .notification {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .unread {
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            background-color: #e6ffe6;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notification System Test</h1>
+    
+    <div>
+        <button onclick="testNotificationAPI()">Test Notification API</button>
+        <button onclick="testBookingAPI()">Test Booking API</button>
+        <button onclick="createTestBooking()">Create Test Booking</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        async function testNotificationAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing notification API...</p>';
+            
+            try {
+                const response = await fetch('/api/notifications?type=provider&limit=10');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Notification API Test Successful</h3>
+                            <p><strong>Unread Count:</strong> ${data.unreadCount}</p>
+                            <p><strong>Total Notifications:</strong> ${data.notifications.length}</p>
+                            <h4>Notifications:</h4>
+                            ${data.notifications.map(n => `
+                                <div class="notification ${n.readAt ? '' : 'unread'}">
+                                    <strong>${n.title}</strong><br>
+                                    <small>Type: ${n.type} | Created: ${new Date(n.createdAt).toLocaleString()}</small><br>
+                                    ${n.content}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Notification API Test Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${JSON.stringify(data, null, 2)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testBookingAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing booking API...</p>';
+            
+            try {
+                const response = await fetch('/api/bookings?type=provider');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Booking API Test Successful</h3>
+                            <p><strong>Total Bookings:</strong> ${data.length}</p>
+                            <h4>Recent Bookings:</h4>
+                            ${data.slice(0, 5).map(b => `
+                                <div class="notification">
+                                    <strong>${b.serviceType}</strong> - ${b.status}<br>
+                                    <small>Date: ${new Date(b.date).toLocaleString()}</small><br>
+                                    Customer: ${b.customer?.name || 'Unknown'}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Booking API Test Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${JSON.stringify(data, null, 2)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function createTestBooking() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Creating test booking...</p>';
+            
+            const bookingData = {
+                providerId: 'cmg49ak250002us4kik7n0jxd', // Sarah Johnson's provider ID from our tests
+                serviceType: 'cleaning',
+                date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                duration: 120,
+                notes: 'Test booking from HTML test page'
+            };
+            
+            try {
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Test Booking Created Successfully</h3>
+                            <p><strong>Booking ID:</strong> ${data.id}</p>
+                            <p><strong>Service:</strong> ${data.serviceType}</p>
+                            <p><strong>Date:</strong> ${new Date(data.date).toLocaleString()}</p>
+                            <p><strong>Status:</strong> ${data.status}</p>
+                            <p>Now test the notification API to see if provider notification was created!</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Booking Creation Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${JSON.stringify(data, null, 2)}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -133,13 +133,10 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
     }
   }
 
-  // Check if booking can be cancelled (24-hour rule)
+  // Providers can reject/cancel appointments at any time (no 24-hour restriction)
   const canCancelBooking = (bookingDate: string) => {
-    const appointmentDate = new Date(bookingDate);
-    const now = new Date();
-    const timeDifference = appointmentDate.getTime() - now.getTime();
-    const hoursUntilBooking = timeDifference / (1000 * 60 * 60);
-    return hoursUntilBooking >= 24;
+    // Providers have full control over their appointments and can reject them anytime
+    return true;
   }
 
   const formatDate = (dateString: string) => {
@@ -151,10 +148,36 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
   }
 
   const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    try {
+      // Handle different time formats
+      if (!timeString) return 'Time not set';
+      
+      // If it's already in HH:MM format, use it directly
+      if (/^\d{2}:\d{2}$/.test(timeString)) {
+        const [hours, minutes] = timeString.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      // If it's a full datetime string, extract time
+      const date = new Date(timeString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      // Fallback for other formats
+      return timeString;
+    } catch (error) {
+      console.warn('Error formatting time:', timeString, error);
+      return 'Invalid Time';
+    }
   }
 
   return (
@@ -203,7 +226,11 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
               </div>
             ) : bookings && bookings.length > 0 ? (
               bookings.map((booking) => (
-                <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div 
+                  key={booking.id} 
+                  id={`booking-${booking.id}`}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
@@ -286,7 +313,11 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
               </div>
             ) : orders && orders.length > 0 ? (
               orders.map((order) => (
-                <div key={order.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div 
+                  key={order.id} 
+                  id={`order-${order.id}`}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">

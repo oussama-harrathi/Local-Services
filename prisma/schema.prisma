@@ -256,13 +256,14 @@ model Order {
 model Notification {
   id          String   @id @default(cuid())
   userId      String   // Recipient user ID
-  type        String   // booking_confirmation, booking_reminder_24h, booking_reminder_2h, review_request
+  type        String   // booking_confirmation, booking_reminder_24h, booking_reminder_2h, review_request, order_update, new_order_request, new_appointment_request
   title       String   // Email subject
   content     String   // Email body content
   metadata    String?  // JSON string for additional data (booking ID, etc.)
   status      String   @default("pending") // pending, sent, failed
   scheduledAt DateTime // When to send the notification
   sentAt      DateTime?
+  readAt      DateTime? // When the notification was read by the user
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -270,6 +271,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([status, scheduledAt])
+  @@index([userId, readAt])
   @@map("notifications")
 }
 

@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
     // Check if provider exists
     const provider = await prisma.providerProfile.findUnique({
       where: { id: validatedData.providerId },
+      include: {
+        user: true
+      }
     });
 
     if (!provider) {
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       await enqueueBookingNotifications(
         booking.id, 
         booking.customerId, 
-        booking.providerId,
+        provider.user.id, // Use provider user ID, not profile ID
         session.user.name || 'Customer',
         provider.name,
         booking.serviceType,
@@ -106,7 +109,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Provider profile not found' }, { status: 404 });
       }
 
-      bookings = await prisma.booking.findMany({
+      const rawBookings = await prisma.booking.findMany({
         where: { providerId: providerProfile.id },
         include: {
           customer: {
@@ -119,6 +122,16 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { date: 'asc' },
       });
+
+      // Transform bookings to include separate time field for provider interface
+      bookings = rawBookings.map(booking => ({
+        ...booking,
+        time: booking.date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        })
+      }));
     } else {
       // Get bookings for customer
       bookings = await prisma.booking.findMany({

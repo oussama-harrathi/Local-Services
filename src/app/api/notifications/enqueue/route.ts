@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 const enqueueNotificationSchema = z.object({
   userId: z.string(),
-  type: z.enum(['booking_confirmation', 'booking_reminder_24h', 'booking_reminder_2h', 'review_request', 'booking_update']),
+  type: z.enum(['booking_confirmation', 'booking_reminder_24h', 'booking_reminder_2h', 'review_request', 'booking_update', 'new_appointment_request']),
   title: z.string(),
   content: z.string(),
   scheduledAt: z.string().datetime().optional(),
@@ -105,13 +105,13 @@ export async function enqueueBookingNotifications(
       });
     }
 
-    // Provider notification
+    // Provider notification for new appointment request
     if (providerPrefs?.emailBookingConfirm !== false) {
       notifications.push({
         userId: providerId,
-        type: 'booking_confirmation' as const,
-        title: 'New Booking Received - LocalSpark',
-        content: `You have a new booking from ${customerName} for ${appointmentDate.toLocaleDateString()}.`,
+        type: 'new_appointment_request' as const,
+        title: 'New Appointment Request - LocalSpark',
+        content: `You have received a new appointment request from ${customerName} for ${appointmentDate.toLocaleDateString()}.`,
         scheduledAt: new Date(),
         metadata,
       });
