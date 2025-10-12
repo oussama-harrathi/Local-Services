@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getAdminEmails } from '@/lib/admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       const adminUsers = await prisma.user.findMany({
         where: {
           email: {
-            in: ['admin@localspark.com', 'support@localspark.com'] // Add your admin emails here
+            in: getAdminEmails()
           }
         }
       });

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -165,8 +165,8 @@ model Report {
   
   // Relations
   reporter User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  provider ProviderProfile? @relation("ProviderReports", fields: [targetId], references: [id], onDelete: Cascade)
-  review   Review?          @relation("ReviewReports", fields: [targetId], references: [id], onDelete: Cascade)
+  provider ProviderProfile? @relation("ProviderReports", fields: [targetId], references: [id], onDelete: Cascade, map: "reports_provider_fkey")
+  review   Review?          @relation("ReviewReports", fields: [targetId], references: [id], onDelete: Cascade, map: "reports_review_fkey")
   
   @@map("reports")
 }

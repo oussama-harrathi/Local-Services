@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { isAdmin } from '@/lib/admin';
 
 export async function DELETE(
   request: NextRequest,
@@ -19,7 +20,7 @@ export async function DELETE(
       where: { email: session.user.email },
     });
 
-    if (!user || user.email !== 'admin@localspark.com') { // Replace with your admin email
+    if (!user || !isAdmin(user.email)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

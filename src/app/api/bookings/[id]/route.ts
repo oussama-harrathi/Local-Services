@@ -118,9 +118,10 @@ export async function PATCH(
 
     // Check 24-hour cancellation policy
     if (status === 'cancelled') {
-      const bookingDate = new Date(booking.date);
+      // Combine date and time for accurate comparison
+      const bookingDateTime = new Date(`${booking.date}T${booking.time || '00:00'}`);
       const now = new Date();
-      const timeDifference = bookingDate.getTime() - now.getTime();
+      const timeDifference = bookingDateTime.getTime() - now.getTime();
       const hoursUntilBooking = timeDifference / (1000 * 60 * 60);
 
       // Providers can reject pending appointments anytime, but cannot cancel confirmed ones within 24h

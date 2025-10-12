@@ -91,7 +91,13 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
 
   return (
     <div 
-      className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+      className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer border-2 ${
+        provider.verificationStatus === 'approved' 
+          ? 'border-transparent hover:border-blue-200' 
+          : provider.verificationStatus === 'pending'
+          ? 'border-yellow-200 bg-yellow-50/30'
+          : 'border-gray-200 bg-gray-50/30'
+      }`}
       onClick={handleCardClick}
     >
       {/* Header with avatar and basic info */}
@@ -184,6 +190,11 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
                 <>
                   <CheckCircle className="w-4 h-4 text-blue-500" />
                   <span className="text-xs text-blue-600 font-medium">Verified</span>
+                </>
+              ) : provider.verificationStatus === 'pending' ? (
+                <>
+                  <Clock className="w-4 h-4 text-yellow-500" />
+                  <span className="text-xs text-yellow-600 font-medium">Pending Verification</span>
                 </>
               ) : (
                 <>

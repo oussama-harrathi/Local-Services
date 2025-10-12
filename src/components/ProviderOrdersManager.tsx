@@ -133,10 +133,30 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
     }
   }
 
-  // Providers can reject/cancel appointments at any time (no 24-hour restriction)
-  const canCancelBooking = (bookingDate: string) => {
-    // Providers have full control over their appointments and can reject them anytime
-    return true;
+  // Check if booking can be cancelled (providers can reject pending anytime, but confirmed bookings have restrictions)
+  const canCancelBooking = (booking: any) => {
+    // Check if the booking date/time has already passed
+    const bookingDateTime = new Date(`${booking.date}T${booking.time || '00:00'}`);
+    const now = new Date();
+    
+    // If the booking time has already passed, don't show cancel button
+    if (bookingDateTime < now) {
+      return false;
+    }
+    
+    // Providers can always reject pending appointments
+    if (booking.status === 'pending') {
+      return true;
+    }
+    
+    // For confirmed bookings, check 24-hour policy
+    if (booking.status === 'confirmed') {
+      const timeDifference = bookingDateTime.getTime() - now.getTime();
+      const hoursUntilBooking = timeDifference / (1000 * 60 * 60);
+      return hoursUntilBooking >= 24;
+    }
+    
+    return false;
   }
 
   const formatDate = (dateString: string) => {
@@ -277,7 +297,7 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                             <Check className="w-4 h-4" />
                           </LoadingButton>
                         )}
-                        {canCancelBooking(booking.date) ? (
+                        {canCancelBooking(booking) ? (
                           <LoadingButton
                             onClick={() => handleBookingAction(booking.id, 'cancelled')}
                             isLoading={updateBookingMutation.isPending}
@@ -286,10 +306,23 @@ export default function ProviderOrdersManager({ providerId }: ProviderOrdersMana
                             <X className="w-4 h-4" />
                           </LoadingButton>
                         ) : (
-                          <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-500 rounded text-sm">
-                            <AlertCircle className="w-4 h-4" />
-                            <span className="text-xs">Cannot cancel (less than 24h)</span>
-                          </div>
+                          // Only show the "cannot cancel" message if the booking is still active but within 24h
+                          (() => {
+                            const bookingDateTime = new Date(`${booking.date}T${booking.time || '00:00'}`);
+                            const now = new Date();
+                            const hasExpired = bookingDateTime < now;
+                            
+                            if (hasExpired) {
+                              return null; // Don't show anything for expired bookings
+                            }
+                            
+                            return (
+                              <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-500 rounded text-sm">
+                                <AlertCircle className="w-4 h-4" />
+                                <span className="text-xs">Cannot cancel (less than 24h)</span>
+                              </div>
+                            );
+                          })()
                         )}
                       </div>
                     )}

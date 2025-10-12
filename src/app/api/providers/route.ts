@@ -15,7 +15,9 @@ export async function GET(request: Request) {
     const maxKm = searchParams.get('maxKm');
 
     // Build where clause for Prisma query
-    const whereClause: any = {};
+    const whereClause: any = {
+      isHidden: false, // Only show visible providers
+    };
 
     // Filter by city
     if (city && city !== 'all' && city !== '') {
@@ -31,9 +33,13 @@ export async function GET(request: Request) {
 
     // Filter by search query (search in name and bio)
     if (q) {
-      whereClause.OR = [
-        { name: { contains: q } },
-        { bio: { contains: q } },
+      whereClause.AND = [
+        {
+          OR: [
+            { name: { contains: q } },
+            { bio: { contains: q } },
+          ]
+        }
       ];
     }
 
@@ -58,7 +64,28 @@ export async function GET(request: Request) {
     });
 
     // Transform database records to match the Provider type
-    let providers: Provider[] = providerProfiles.map((profile: { id: string; name: string; city: string; lat: number; lng: number; categories: string; bio: string; avatarUrl: string; whatsapp: string | null; messenger: string | null; reviews: { rating: number }[]; schedules: { dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }[]; user: any }) => {
+    let providers: Provider[] = providerProfiles.map((profile: { 
+      id: string; 
+      name: string; 
+      city: string; 
+      lat: number; 
+      lng: number; 
+      categories: string; 
+      bio: string; 
+      avatarUrl: string; 
+      whatsapp: string | null; 
+      messenger: string | null; 
+      verificationStatus: string | null;
+      verificationLevel: string | null;
+      verificationBadgeType: string | null;
+      verificationRequestedAt: Date | null;
+      verificationCompletedAt: Date | null;
+      verificationDocuments: string | null;
+      verificationNotes: string | null;
+      reviews: { rating: number }[]; 
+      schedules: { dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }[]; 
+      user: any 
+    }) => {
       // Calculate average rating and count from reviews
       const ratings = profile.reviews.map((r: { rating: number }) => r.rating);
       const averageRating = ratings.length > 0 
@@ -84,6 +111,14 @@ export async function GET(request: Request) {
         whatsapp: profile.whatsapp || undefined,
         messenger: profile.messenger || undefined,
         schedules: profile.schedules,
+        // Include verification fields
+        verificationStatus: profile.verificationStatus || 'unverified',
+        verificationLevel: profile.verificationLevel,
+        verificationBadgeType: profile.verificationBadgeType,
+        verificationRequestedAt: profile.verificationRequestedAt,
+        verificationCompletedAt: profile.verificationCompletedAt,
+        verificationDocuments: profile.verificationDocuments,
+        verificationNotes: profile.verificationNotes,
       };
     });
 
