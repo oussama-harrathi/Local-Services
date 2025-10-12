@@ -588,4 +588,249 @@ export class EmailService {
       </html>
     `;
   }
+
+  static generateVerificationStatusEmail(
+    providerName: string,
+    status: 'approved' | 'rejected',
+    verificationLevel: string,
+    verificationBadgeType: string,
+    adminNotes?: string
+  ): string {
+    const statusInfo = {
+      approved: {
+        title: 'Verification Approved! ✅',
+        message: 'Congratulations! Your provider verification has been approved.',
+        color: '#10b981',
+        icon: '✅'
+      },
+      rejected: {
+        title: 'Verification Update ❌',
+        message: 'We were unable to approve your verification request at this time.',
+        color: '#ef4444',
+        icon: '❌'
+      }
+    };
+
+    const info = statusInfo[status];
+    const badgeTypeDisplay = verificationBadgeType.charAt(0).toUpperCase() + verificationBadgeType.slice(1);
+    const levelDisplay = verificationLevel.charAt(0).toUpperCase() + verificationLevel.slice(1);
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${info.title}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+            .container { max-width: 600px; margin: 0 auto; background-color: white; }
+            .header { background: linear-gradient(135deg, ${info.color} 0%, ${info.color}dd 100%); color: white; padding: 30px 20px; text-align: center; }
+            .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+            .content { padding: 30px 20px; }
+            .verification-card { background-color: #f8fafc; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid ${info.color}; }
+            .footer { background-color: #1e293b; color: #94a3b8; padding: 20px; text-align: center; font-size: 14px; }
+            .detail-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+            .detail-label { font-weight: 600; color: #475569; }
+            .detail-value { color: #1e293b; }
+            .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+            .badge-approved { background-color: #dcfce7; color: #166534; }
+            .badge-rejected { background-color: #fecaca; color: #991b1b; }
+            .notes-box { background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
+            .cta-button { display: inline-block; background-color: ${info.color}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">✨ LocalSpark</div>
+              <h1 style="margin: 0; font-size: 24px;">${info.title}</h1>
+            </div>
+            
+            <div class="content">
+              <p style="font-size: 18px; margin-bottom: 20px;">Hello ${providerName},</p>
+              
+              <p style="font-size: 16px; margin-bottom: 25px;">${info.message}</p>
+              
+              <div class="verification-card">
+                <h3 style="margin-top: 0; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 24px;">${info.icon}</span>
+                  Verification Details
+                </h3>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Status:</span>
+                  <span class="detail-value">
+                    <span class="badge badge-${status}">${status.toUpperCase()}</span>
+                  </span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Verification Level:</span>
+                  <span class="detail-value">${levelDisplay}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Badge Type:</span>
+                  <span class="detail-value">${badgeTypeDisplay} Verified</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Date:</span>
+                  <span class="detail-value">${new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}</span>
+                </div>
+              </div>
+
+              ${adminNotes ? `
+                <div class="notes-box">
+                  <h4 style="margin-top: 0; color: #92400e;">Admin Notes:</h4>
+                  <p style="margin-bottom: 0; color: #451a03;">${adminNotes}</p>
+                </div>
+              ` : ''}
+
+              ${status === 'approved' ? `
+                <p style="font-size: 16px; margin: 25px 0;">
+                  Your verification badge is now active on your profile! This will help build trust with potential customers and improve your visibility in search results.
+                </p>
+                
+                <div style="text-align: center;">
+                  <a href="${process.env.NEXTAUTH_URL}/dashboard" class="cta-button">
+                    View Your Profile
+                  </a>
+                </div>
+              ` : `
+                <p style="font-size: 16px; margin: 25px 0;">
+                  Don't worry - you can submit a new verification request at any time. Please review the feedback above and feel free to try again with additional documentation or information.
+                </p>
+                
+                <div style="text-align: center;">
+                  <a href="${process.env.NEXTAUTH_URL}/dashboard/verification" class="cta-button">
+                    Submit New Request
+                  </a>
+                </div>
+              `}
+
+              <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+                If you have any questions about the verification process, please don't hesitate to contact our support team.
+              </p>
+            </div>
+            
+            <div class="footer">
+              <p style="margin: 0;">Thank you for being part of LocalSpark!</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px;">The LocalSpark Team</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  static generateVerificationRequestEmail(
+    adminName: string,
+    providerName: string,
+    verificationLevel: string,
+    verificationBadgeType: string,
+    message?: string
+  ): string {
+    const levelDisplay = verificationLevel.charAt(0).toUpperCase() + verificationLevel.slice(1);
+    const badgeTypeDisplay = verificationBadgeType.charAt(0).toUpperCase() + verificationBadgeType.slice(1);
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>New Verification Request</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
+            .container { max-width: 600px; margin: 0 auto; background-color: white; }
+            .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 30px 20px; text-align: center; }
+            .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+            .content { padding: 30px 20px; }
+            .request-card { background-color: #f8fafc; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #3b82f6; }
+            .footer { background-color: #1e293b; color: #94a3b8; padding: 20px; text-align: center; font-size: 14px; }
+            .detail-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+            .detail-label { font-weight: 600; color: #475569; }
+            .detail-value { color: #1e293b; }
+            .message-box { background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
+            .cta-button { display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="logo">✨ LocalSpark</div>
+              <h1 style="margin: 0; font-size: 24px;">New Verification Request 📋</h1>
+            </div>
+            
+            <div class="content">
+              <p style="font-size: 18px; margin-bottom: 20px;">Hello Admin,</p>
+              
+              <p style="font-size: 16px; margin-bottom: 25px;">
+                A new provider verification request has been submitted and requires your review.
+              </p>
+              
+              <div class="request-card">
+                <h3 style="margin-top: 0; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 24px;">👤</span>
+                  Request Details
+                </h3>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Provider:</span>
+                  <span class="detail-value">${providerName}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Requested Level:</span>
+                  <span class="detail-value">${levelDisplay}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Badge Type:</span>
+                  <span class="detail-value">${badgeTypeDisplay} Verified</span>
+                </div>
+                
+                <div class="detail-row">
+                  <span class="detail-label">Submitted:</span>
+                  <span class="detail-value">${new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}</span>
+                </div>
+              </div>
+
+              ${message ? `
+                <div class="message-box">
+                  <h4 style="margin-top: 0; color: #92400e;">Provider Message:</h4>
+                  <p style="margin-bottom: 0; color: #451a03;">"${message}"</p>
+                </div>
+              ` : ''}
+
+              <p style="font-size: 16px; margin: 25px 0;">
+                Please review this request in the admin panel and take appropriate action.
+              </p>
+              
+              <div style="text-align: center;">
+                <a href="${process.env.NEXTAUTH_URL}/admin/verification" class="cta-button">
+                  Review Request
+                </a>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p style="margin: 0;">LocalSpark Admin Panel</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px;">Automated Notification System</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
 }

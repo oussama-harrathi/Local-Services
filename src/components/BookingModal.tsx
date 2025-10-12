@@ -24,6 +24,12 @@ interface ProviderSchedule {
   isActive: boolean
 }
 
+interface BusyTime {
+  startTime: string // HH:MM format
+  endTime: string // HH:MM format
+  status: 'pending' | 'confirmed'
+}
+
 export default function BookingModal({ isOpen, onClose, providerId, providerName, categories }: BookingModalProps) {
   const { data: session } = useSession()
   const { t } = useLanguage()
@@ -37,6 +43,7 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
     notes: ''
   })
   const [providerSchedules, setProviderSchedules] = useState<ProviderSchedule[]>([])
+  const [busyTimes, setBusyTimes] = useState<BusyTime[]>([])
   const [timeError, setTimeError] = useState('')
 
   // Fetch provider schedules when modal opens
@@ -48,6 +55,18 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
         .catch(err => console.error('Failed to fetch provider schedules:', err))
     }
   }, [isOpen, providerId])
+
+  // Fetch busy times when date changes
+  useEffect(() => {
+    if (formData.date && providerId) {
+      fetch(`/api/providers/${providerId}/busy-times?date=${formData.date}`)
+        .then(res => res.json())
+        .then(data => setBusyTimes(data.busyTimes || []))
+        .catch(err => console.error('Failed to fetch busy times:', err))
+    } else {
+      setBusyTimes([])
+    }
+  }, [formData.date, providerId])
 
   // Validate time selection
   const validateTimeSelection = (date: string, time: string) => {
@@ -90,6 +109,24 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
     if (selectedMinutes < startMinutes || selectedMinutes >= endMinutes) {
       setTimeError(`Provider is available from ${daySchedule.startTime} to ${daySchedule.endTime} on this day`)
       return false
+    }
+    
+    // Check if selected time conflicts with busy times
+    const selectedEndTime = selectedMinutes + formData.duration
+    
+    for (const busyTime of busyTimes) {
+      const busyStartMinutes = timeToMinutes(busyTime.startTime)
+      const busyEndMinutes = timeToMinutes(busyTime.endTime)
+      
+      // Check for overlap
+      if (
+        (selectedMinutes >= busyStartMinutes && selectedMinutes < busyEndMinutes) ||
+        (selectedEndTime > busyStartMinutes && selectedEndTime <= busyEndMinutes) ||
+        (selectedMinutes <= busyStartMinutes && selectedEndTime >= busyEndMinutes)
+      ) {
+        setTimeError(`This time slot conflicts with an existing ${busyTime.status} appointment (${busyTime.startTime} - ${busyTime.endTime})`)
+        return false
+      }
     }
     
     return true
@@ -235,25 +272,53 @@ export default function BookingModal({ isOpen, onClose, providerId, providerName
               {timeError && (
                 <p className="mt-1 text-sm text-red-600">{timeError}</p>
               )}
+              
+              {/* Show busy times for selected date */}
+              {formData.date && busyTimes.length > 0 && (
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-xs font-medium text-red-800 mb-1">Unavailable Times:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {busyTimes.map((busyTime, index) => (
+                      <span
+                        key={index}
+                        className={`inline-block px-2 py-1 text-xs rounded ${
+                          busyTime.status === 'confirmed' 
+                            ? 'bg-red-100 text-red-700 border border-red-300' 
+                            : 'bg-orange-100 text-orange-700 border border-orange-300'
+                        }`}
+                      >
+                        {busyTime.startTime} - {busyTime.endTime}
+                        {busyTime.status === 'pending' && ' (pending)'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
-              Duration (minutes)
-            </label>
-            <select
-              value={formData.duration}
-              onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-            >
-              <option value={30}>30 minutes</option>
-              <option value={60}>1 hour</option>
-              <option value={90}>1.5 hours</option>
-              <option value={120}>2 hours</option>
-              <option value={180}>3 hours</option>
-            </select>
-          </div>
+              <label className="block text-sm font-medium text-black mb-2">
+                Duration (minutes)
+              </label>
+              <select
+                value={formData.duration}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))
+                  // Re-validate time selection when duration changes
+                  if (formData.date && formData.time) {
+                    validateTimeSelection(formData.date, formData.time)
+                  }
+                }}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              >
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1.5 hours</option>
+                <option value={120}>2 hours</option>
+                <option value={180}>3 hours</option>
+              </select>
+            </div>
 
           <div>
             <label className="block text-sm font-medium text-black mb-2">

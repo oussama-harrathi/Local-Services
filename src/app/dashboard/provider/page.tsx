@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft, Plus, Trash2, UtensilsCrossed } from 'lucide-react'
+import { User, MapPin, Camera, MessageCircle, Phone, ArrowLeft, Plus, Trash2, UtensilsCrossed, Shield } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { LoadingButton, LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -13,6 +13,8 @@ import PhotoUploadWithDelete from '@/components/PhotoUploadWithDelete'
 import ScheduleManager from '@/components/ScheduleManager'
 import ProviderOrdersManager from '@/components/ProviderOrdersManager'
 import ProviderNotificationButtonFixed from '@/components/ProviderNotificationButtonFixed'
+import ProviderCalendar from '@/components/ProviderCalendar'
+import Link from 'next/link'
 
 interface MenuItem {
   id: string
@@ -220,8 +222,17 @@ export default function ProviderDashboard() {
                   {t('dashboard.createAndManage')}
                 </p>
               </div>
-              {/* Provider Notification Button */}
-              <ProviderNotificationButtonFixed />
+              <div className="flex items-center gap-3">
+                {/* Verification Button */}
+                <Link href="/dashboard/verification">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <Shield className="h-4 w-4" />
+                    Verify Profile
+                  </button>
+                </Link>
+                {/* Provider Notification Button */}
+                <ProviderNotificationButtonFixed />
+              </div>
             </div>
           </div>
 
@@ -468,6 +479,21 @@ export default function ProviderDashboard() {
             <ScheduleManager />
           </div>
         </div>
+
+        {/* Appointment Calendar Section */}
+        {formData.id && (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Appointment Calendar</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                View and manage your appointments by date
+              </p>
+            </div>
+            <div className="p-6">
+              <ProviderCalendar providerId={formData.id} />
+            </div>
+          </div>
+        )}
 
         {/* Orders & Appointments Management Section */}
         {formData.id && (

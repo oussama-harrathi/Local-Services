@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart, UtensilsCrossed, Clock } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Calendar, Shield, ArrowLeft, Edit, Flag, ImageIcon, ShoppingCart, UtensilsCrossed, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -237,6 +237,20 @@ export default function ProviderDetailPage() {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
                   <span>{t('providerDetails.joined')} {new Date(provider.createdAt).toLocaleDateString()}</span>
+                </div>
+                {/* Verification Status */}
+                <div className="flex items-center gap-2">
+                  {provider.verificationStatus === 'approved' ? (
+                    <>
+                      <CheckCircle className="w-5 h-5 text-blue-300" />
+                      <span className="text-blue-200 font-medium">Verified</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-5 h-5 text-blue-300/60" />
+                      <span className="text-blue-200/60">Unverified</span>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-6">

@@ -61,6 +61,10 @@ export async function POST(request: NextRequest) {
             case 'order_update':
               shouldSend = prefs.emailBookingConfirm; // Use booking confirm preference for orders
               break;
+            case 'verification_request':
+            case 'verification_status_update':
+              shouldSend = true; // Always send verification notifications
+              break;
           }
         }
 
@@ -153,10 +157,9 @@ function generateEmailContent(
   userName: string,
   metadata: any
 ): string {
-  const appointmentDate = new Date(metadata.appointmentDate);
-
   switch (type) {
     case 'booking_confirmation':
+      const appointmentDate = new Date(metadata.appointmentDate);
       return EmailService.generateBookingConfirmationEmail(
         userName,
         metadata.providerName || 'Provider',
@@ -167,21 +170,23 @@ function generateEmailContent(
       );
 
     case 'booking_reminder_24h':
+      const reminderDate24h = new Date(metadata.appointmentDate);
       return EmailService.generateReminderEmail(
         userName,
         metadata.providerName || 'Provider',
         metadata.serviceType,
-        appointmentDate,
+        reminderDate24h,
         metadata.duration,
         24
       );
 
     case 'booking_reminder_2h':
+      const reminderDate2h = new Date(metadata.appointmentDate);
       return EmailService.generateReminderEmail(
         userName,
         metadata.providerName || 'Provider',
         metadata.serviceType,
-        appointmentDate,
+        reminderDate2h,
         metadata.duration,
         2
       );
@@ -195,12 +200,13 @@ function generateEmailContent(
       );
 
     case 'booking_update':
+      const updateDate = new Date(metadata.appointmentDate);
       return EmailService.generateBookingUpdateEmail(
         userName,
         metadata.providerName || 'Provider',
         metadata.serviceType,
         metadata.status,
-        appointmentDate,
+        updateDate,
         metadata.duration,
         metadata.totalPrice
       );
@@ -213,6 +219,24 @@ function generateEmailContent(
         metadata.items,
         metadata.totalPrice,
         new Date(metadata.orderDate)
+      );
+
+    case 'verification_request':
+      return EmailService.generateVerificationRequestEmail(
+        userName, // admin name
+        metadata.providerName,
+        metadata.verificationLevel,
+        metadata.verificationBadgeType,
+        metadata.message
+      );
+
+    case 'verification_status_update':
+      return EmailService.generateVerificationStatusEmail(
+        userName, // provider name
+        metadata.verificationStatus === 'verified' ? 'approved' : 'rejected',
+        metadata.verificationLevel,
+        metadata.verificationBadgeType,
+        metadata.adminNotes
       );
 
     default:

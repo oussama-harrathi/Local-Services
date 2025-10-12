@@ -22,6 +22,14 @@ export type Provider = {
     endTime: string;
     isActive: boolean;
   }[];
+  // Verification fields
+  verificationStatus?: string;
+  verificationLevel?: string | null;
+  verificationBadgeType?: string | null;
+  verificationRequestedAt?: Date | null;
+  verificationCompletedAt?: Date | null;
+  verificationDocuments?: string | null;
+  verificationNotes?: string | null;
 };
 
 export type CityCenter = {

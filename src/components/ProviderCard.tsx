@@ -1,9 +1,10 @@
 'use client';
 
 import { Provider } from '@/lib/types';
-import { Star, MapPin, MessageCircle, Phone, Clock } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Phone, Clock, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import VerificationBadge from './VerificationBadge';
 
 interface ProviderCardProps {
   provider: Provider;
@@ -159,13 +160,37 @@ export default function ProviderCard({ provider }: ProviderCardProps) {
           </div>
           
           <div className="w-full">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {provider.name}
-            </h3>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {provider.name}
+              </h3>
+              <VerificationBadge
+                verificationStatus={provider.verificationStatus || 'unverified'}
+                verificationLevel={provider.verificationLevel}
+                verificationBadgeType={provider.verificationBadgeType}
+                size="sm"
+                showText={false}
+              />
+            </div>
             
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <MapPin className="w-4 h-4" />
               <span>{provider.city}</span>
+            </div>
+
+            {/* Verification Status */}
+            <div className="flex items-center justify-center gap-1 mt-1">
+              {provider.verificationStatus === 'approved' ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs text-blue-600 font-medium">Verified</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-500">Unverified</span>
+                </>
+              )}
             </div>
 
             {/* Current Status */}

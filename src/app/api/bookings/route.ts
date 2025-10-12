@@ -37,6 +37,52 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
     }
 
+    // Check for time conflicts (prevent double booking)
+    const requestedStartTime = new Date(validatedData.date);
+    const requestedEndTime = new Date(requestedStartTime.getTime() + validatedData.duration * 60000);
+
+    const conflictingBookings = await prisma.booking.findMany({
+      where: {
+        providerId: validatedData.providerId,
+        status: {
+          in: ['pending', 'confirmed'] // Only check active bookings
+        },
+        OR: [
+          // New booking starts during existing booking
+          {
+            AND: [
+              { date: { lte: requestedStartTime } },
+              { 
+                date: { 
+                  gte: new Date(requestedStartTime.getTime() - 24 * 60 * 60 * 1000) // Check within 24 hours for efficiency
+                }
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    // Check each conflicting booking for actual time overlap
+    for (const booking of conflictingBookings) {
+      const existingStartTime = booking.date;
+      const existingEndTime = new Date(existingStartTime.getTime() + booking.duration * 60000);
+
+      // Check if times overlap
+      const hasOverlap = (
+        (requestedStartTime >= existingStartTime && requestedStartTime < existingEndTime) ||
+        (requestedEndTime > existingStartTime && requestedEndTime <= existingEndTime) ||
+        (requestedStartTime <= existingStartTime && requestedEndTime >= existingEndTime)
+      );
+
+      if (hasOverlap) {
+        return NextResponse.json({ 
+          error: 'Time slot not available', 
+          message: `This time slot conflicts with an existing appointment from ${existingStartTime.toLocaleTimeString()} to ${existingEndTime.toLocaleTimeString()}`
+        }, { status: 409 });
+      }
+    }
+
     // Create the booking
     const booking = await prisma.booking.create({
       data: {
@@ -96,6 +142,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // 'customer' or 'provider'
+    const start = searchParams.get('start'); // Optional date range start
+    const end = searchParams.get('end'); // Optional date range end
 
     let bookings;
 
@@ -109,8 +157,20 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Provider profile not found' }, { status: 404 });
       }
 
+      // Build date filter if provided
+      const dateFilter: any = {};
+      if (start && end) {
+        dateFilter.date = {
+          gte: new Date(start),
+          lte: new Date(end)
+        };
+      }
+
       const rawBookings = await prisma.booking.findMany({
-        where: { providerId: providerProfile.id },
+        where: { 
+          providerId: providerProfile.id,
+          ...dateFilter
+        },
         include: {
           customer: {
             select: {
